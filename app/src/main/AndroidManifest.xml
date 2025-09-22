@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.IBanking_PhanHeDongHocPhi">
         <activity
+            android:name=".HomeScreen"
+            android:exported="false" />
+        <activity
             android:name=".LoginScreen"
             android:exported="true">
             <intent-filter>

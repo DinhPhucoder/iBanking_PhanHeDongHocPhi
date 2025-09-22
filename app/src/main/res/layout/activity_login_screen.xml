@@ -6,23 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LoginScreen"
-    android:background="@drawable/backgr">
+    android:background="@drawable/backgr4">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/loginCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
+        android:layout_margin="25dp"
         app:strokeColor="#1565C0"
         app:strokeWidth="1dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -37,12 +37,17 @@
                 android:gravity="center"
                 android:text="iBanking"
                 android:textColor="#1565C0"
-                android:textSize="40dp" />
+                android:textSize="35sp"
+                android:textStyle="bold"/>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="12dp"
+                app:boxStrokeColor="#1565C0"
+                app:helperTextTextColor="#1565C0"
+                app:hintTextColor="#1565C0"
+                >
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
@@ -58,7 +63,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 app:endIconMode="password_toggle"
-                app:endIconTint="#1565C0">
+                app:endIconTint="#1565C0"
+                app:boxStrokeColor="#1565C0"
+                app:hintTextColor="#1565C0"
+                >
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtPW"
@@ -69,15 +77,18 @@
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:backgroundTint="#1565C0"
                 android:text="Đăng nhập"
                 android:textAllCaps="false"
-                android:textColor="@android:color/white" />
+                app:cornerRadius="10dp"
+                app:backgroundTint="#1565C0"
+                android:textColor="@android:color/white"
+                />
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
