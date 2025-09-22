@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LoginScreen"
-    android:background="@drawable/backgr4">
+    android:background="@drawable/backgr5">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/loginCard"
@@ -84,10 +84,9 @@
                 android:layout_marginTop="20dp"
                 android:text="Đăng nhập"
                 android:textAllCaps="false"
-                app:cornerRadius="10dp"
-                app:backgroundTint="#1565C0"
                 android:textColor="@android:color/white"
-                />
+                app:backgroundTint="#1565C0"
+                app:cornerRadius="10dp" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
