@@ -3,6 +3,7 @@ package com.example.ibanking_phanhedonghocphi;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ public class HomeScreen extends AppCompatActivity {
     TextView tvBalacnce;
     ImageView ivEye;
     MenuAdapter adapter;
+    Button btnAccount;
     private Map<String, Class<?>> activityMap;
     final boolean[] isHidden = {true};
     @Override
@@ -47,6 +49,7 @@ public class HomeScreen extends AppCompatActivity {
         rvMenu = findViewById(R.id.rvMenu);
         tvBalacnce = findViewById(R.id.tvBalance);
         ivEye = findViewById(R.id.ivEye);
+        btnAccount = findViewById(R.id.btnAccount);
 
         // Tạo danh sách chức năng
         menuList = new ArrayList<>();
@@ -58,7 +61,7 @@ public class HomeScreen extends AppCompatActivity {
         menuList.add(new MenuItem(R.drawable.setting, "Cài đặt"));
 
         activityMap = new HashMap<>();
-        activityMap.put("Đóng học phí", HocPhiScreen.class);
+        activityMap.put("Đóng học phí", TutionScreen.class);
 
         adapter = new MenuAdapter(this, menuList, new MenuAdapter.OnItemClickListener() {
             @Override
@@ -80,11 +83,8 @@ public class HomeScreen extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(isHidden[0]) {
-                    double vnd = 13450000;
-                    Locale vietnam = new Locale("vi", "VN");
-                    NumberFormat formatterVND = NumberFormat.getCurrencyInstance(vietnam);
-                    String formattedVND = formatterVND.format(vnd).replace("₫", "");
-                    tvBalacnce.setText(formattedVND + "VND");
+                    double vnd = 13450000; //Lay du lieu tu DB thong qua API
+                    tvBalacnce.setText(formatHocPhi(vnd));
                     ivEye.setImageResource(R.drawable.eye_slash);
                 } else {
                     tvBalacnce.setText("********* VND");
@@ -93,5 +93,19 @@ public class HomeScreen extends AppCompatActivity {
                 isHidden[0] = !isHidden[0];
             }
         });
+
+        btnAccount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent myIntent = new Intent(HomeScreen.this, TransactionHistoryScreen.class);
+                startActivity(myIntent);
+
+            }
+        });
+    }
+    private String formatHocPhi(double hocPhi) {
+        Locale vietnam = new Locale("vi", "VN");
+        NumberFormat formatterVND = NumberFormat.getCurrencyInstance(vietnam);
+        return formatterVND.format(hocPhi).replace("₫", "VND");
     }
 }

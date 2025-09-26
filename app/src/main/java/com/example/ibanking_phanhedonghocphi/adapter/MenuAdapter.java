@@ -1,19 +1,15 @@
 package com.example.ibanking_phanhedonghocphi.adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.ibanking_phanhedonghocphi.HocPhiScreen;
-import com.example.ibanking_phanhedonghocphi.HomeScreen;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.R;
 
