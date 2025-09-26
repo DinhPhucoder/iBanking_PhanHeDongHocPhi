@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">iBanking</string>
+    <string name="send_again"><u>Gửi lại mã</u></string>
+
 </resources>

@@ -15,7 +15,7 @@
         android:layout_margin="25dp"
         app:strokeColor="#1565C0"
         app:strokeWidth="1dp"
-        android:background="@color/white"
+        android:backgroundTint="@color/white"
         app:cardCornerRadius="16dp"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -55,6 +55,7 @@
                     android:layout_height="wrap_content"
                     android:drawableStart="@drawable/user"
                     android:hint="Username"
+                    android:textColor="@color/blue"
                     android:inputType="textPersonName" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -74,6 +75,7 @@
                     android:layout_height="wrap_content"
                     android:drawableStart="@drawable/lock"
                     android:hint="Password"
+                    android:textColor="#1565C0"
                     android:inputType="textPassword" />
             </com.google.android.material.textfield.TextInputLayout>
 

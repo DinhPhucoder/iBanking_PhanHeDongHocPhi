@@ -104,33 +104,15 @@
                 android:textColor="@color/white" />
         </TableRow>
 
-        <TableRow
-            android:paddingBottom="15dp">
-            <TextView
-                android:id="@+id/textView9"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="Học kì: "
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvHocKi"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="TextView"
-                android:textColor="@color/white" />
-        </TableRow>
 
         <TableRow>
             <TextView
                 android:id="@+id/textView10"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tổng học phí: "
+                android:text="Tổng học phí \ncần thanh toán: "
                 android:textSize="15sp"
-
+                android:maxLines="2"
                 android:textStyle="bold"
                 android:textColor="@color/white"/>
 
@@ -140,25 +122,86 @@
                 android:layout_height="wrap_content"
                 android:text="TextView"
                 android:textColor="@color/white"
+                android:layout_gravity="bottom"
              />
         </TableRow>
     </TableLayout>
 
-    <View
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/OTPLayout"
+        android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="Xác thực mã OTP"
+            android:textColor="@color/white"
+            android:textSize="18dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:text="Vui lòng nhập mã OTP được gửi về\n52300051@student.tdtu.edu.vn"
+            android:textColor="@color/white"
+            android:textSize="15dp" />
+
+
+        <com.chaos.view.PinView
+            android:id="@+id/pinView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:inputType="number"
+            android:itemBackground="#32FFFFFF"
+            android:textColor="@color/white"
+            app:itemCount="6"
+            app:itemHeight="40dp"
+            app:itemRadius="5dp"
+            app:itemWidth="40dp"
+            app:lineColor="@color/white"
+            app:lineWidth="2dp"
+            app:viewType="rectangle" />
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSendAgain"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="@string/send_again"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:iconPadding="0dp" />
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnPay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
-        android:text="THANH TOÁN"
+        android:text="TIẾP TỤC"
         android:textColor="@android:color/white"
         app:backgroundTint="#999999"
         app:cornerRadius="10dp"
-        android:enabled="false"
-        />
+        android:enabled="false" />
 
 </LinearLayout>
