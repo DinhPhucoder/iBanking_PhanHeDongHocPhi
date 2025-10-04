@@ -17,7 +17,10 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ibanking_phanhedonghocphi.adapter.MenuAdapter;
+import com.example.ibanking_phanhedonghocphi.api.ApiClient;
+import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
+import com.example.ibanking_phanhedonghocphi.model.User;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -26,6 +29,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class HomeScreen extends AppCompatActivity {
     RecyclerView rvMenu;
     List<MenuItem> menuList;
@@ -33,6 +40,9 @@ public class HomeScreen extends AppCompatActivity {
     ImageView ivEye;
     MenuAdapter adapter;
     Button btnAccount;
+    TextView textView;
+    private ApiService apiService;
+
     private Map<String, Class<?>> activityMap;
     final boolean[] isHidden = {true};
     @Override
@@ -45,11 +55,34 @@ public class HomeScreen extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        apiService = ApiClient.getClient().create(ApiService.class);
+        // Lấy userID từ LoginScreen
+        long userId = getIntent().getLongExtra("USER_ID", -1);
+        //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
+
+        if (userId != -1) {
+            // Gọi API lấy thông tin user
+            apiService.getUserById(userId).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        String fullName = response.body().getFullName();
+                        textView.setText("Xin chào " + fullName);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    textView.setText("Xin chào (lỗi tải tên)");
+                }
+            });
+        }
 
         rvMenu = findViewById(R.id.rvMenu);
         tvBalacnce = findViewById(R.id.tvBalance);
         ivEye = findViewById(R.id.ivEye);
         btnAccount = findViewById(R.id.btnAccount);
+        textView = findViewById(R.id.textView);
 
         // Tạo danh sách chức năng
         menuList = new ArrayList<>();
