@@ -55,7 +55,7 @@ public class HomeScreen extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        apiService = ApiClient.getClient().create(ApiService.class);
+        apiService = ApiClient.getUserApiService();
         // Lấy userID từ LoginScreen
         long userId = getIntent().getLongExtra("USER_ID", -1);
         //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
