@@ -1,10 +1,12 @@
 package com.example.ibanking_phanhedonghocphi.model;
 
+import java.math.BigInteger;
+
 public class LoginResponse {
-    private Long userID;
+    private BigInteger userID;
     private String fullName;
 
-    public Long getUserID() {
+    public BigInteger getUserID() {
         return userID;
     }
     public String getFullName() {

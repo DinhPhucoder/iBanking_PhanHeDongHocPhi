@@ -14,8 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.ibanking_phanhedonghocphi.R;
 import com.example.ibanking_phanhedonghocphi.model.TransactionItem;
 
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -47,13 +49,21 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
         TransactionItem item = transactionList.get(position);
 
-        Date date = new Date(item.getTimestamp());
+        Date date = new Date(); // Giá trị mặc định
+
+        try {
+            Instant instant = Instant.parse(item.getTimestamp());
+            date = Date.from(instant);
+        } catch (Exception e) {
+
+        }
+
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         holder.tvTimestamp.setText(sdf.format(date));
         holder.tvDescription.setText(item.getDescription());
-        String amountText = (item.getAmount() >= 0 ? "+" : "") + formatSoTien(item.getAmount());
+        String amountText = ((item.getAmount() >= 0 ? "+" : "") + formatSoTien(item.getAmount()));
         holder.tvAmount.setText(amountText);
-        if(item.getAmount() >= 0) {
+        if(item.getAmount()>= 0) {
             holder.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.green));
             holder.tvAmountUnit.setTextColor(ContextCompat.getColor(context, R.color.green));
             holder.ivTransaction.setImageResource(R.drawable.down);
