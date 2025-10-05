@@ -52,6 +52,17 @@
             android:focusableInTouchMode="true"
             />
 
+        <TextView
+            android:id="@+id/tvCountDown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Mã OTP sẽ hết hạn sau 60 giây"
+            android:textColor="@color/black"
+            android:textSize="12sp"
+            android:layout_marginTop="10dp"/>
+
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSendAgain"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -65,7 +76,8 @@
             android:textColor="@color/black"
             android:textSize="12sp"
             android:textStyle="bold"
-            app:iconPadding="0dp" />
+            app:iconPadding="0dp"
+            android:enabled="false"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPay"

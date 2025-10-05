@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -42,23 +43,16 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
         MaterialButton btnSendAgain = view.findViewById(R.id.btnSendAgain);
         MaterialButton btnPay = view.findViewById(R.id.btnPay);
         TextView tv1 = view.findViewById(R.id.tv1);
+        TextView tvCountdown = view.findViewById(R.id.tvCountDown);
 
-        // Focus vào PinView + show keyboard
-//        pinView.requestFocus();
-//        pinView.postDelayed(() -> {
-//            InputMethodManager imm =
-//                    (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-//            if (imm != null) {
-//                imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT);
-//            }
-//        }, 200);
-        pinView.setOnClickListener(v -> {
-            pinView.requestFocus();
-            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        pinView.requestFocus();
+        pinView.postDelayed(() -> {
+            InputMethodManager imm =
+                    (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             if (imm != null) {
                 imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT);
             }
-        });
+        }, 200);
 
         btnSendAgain.setOnClickListener(v ->
                 Toast.makeText(getContext(), "OTP sent again!", Toast.LENGTH_SHORT).show()
@@ -84,6 +78,17 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
                 }
             }
         });
+
+        new CountDownTimer(60000, 1000) {  // 60000ms = 60s, tick mỗi 1000ms
+            public void onTick(long millisUntilFinished) {
+                tvCountdown.setText("Mã OTP sẽ hết hạn sau " + millisUntilFinished / 1000 + " giây");
+            }
+
+            public void onFinish() {
+                tvCountdown.setText("OTP đã hết hạn. Vui lòng gửi lại mã.");
+                btnSendAgain.setEnabled(true);  // Enable lại nút gửi lại
+            }
+        }.start();
     }
 
 }
