@@ -17,11 +17,14 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ibanking_phanhedonghocphi.adapter.MenuAdapter;
+import com.example.ibanking_phanhedonghocphi.api.AccountServiceApi;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.model.User;
 
+
+import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +45,9 @@ public class HomeScreen extends AppCompatActivity {
     Button btnAccount;
     TextView textView;
     private ApiService apiService;
+    private AccountServiceApi accountServiceApi;
+
+    Double balance;
 
     private Map<String, Class<?>> activityMap;
     final boolean[] isHidden = {true};
@@ -55,7 +61,7 @@ public class HomeScreen extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        apiService = ApiClient.getClient().create(ApiService.class);
+        apiService = ApiClient.getUserApiService();
         // Lấy userID từ LoginScreen
         long userId = getIntent().getLongExtra("USER_ID", -1);
         //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
@@ -83,7 +89,23 @@ public class HomeScreen extends AppCompatActivity {
         ivEye = findViewById(R.id.ivEye);
         btnAccount = findViewById(R.id.btnAccount);
         textView = findViewById(R.id.textView);
+        accountServiceApi = ApiClient.getAccountApiService();
 
+        accountServiceApi.getBalance(UserApp.getInstance().getUserID()).enqueue(new Callback<BigDecimal>() {
+            @Override
+            public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    balance = response.body().doubleValue();
+                } else {
+                    Toast.makeText(HomeScreen.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BigDecimal> call, Throwable t) {
+                Toast.makeText(HomeScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
         // Tạo danh sách chức năng
         menuList = new ArrayList<>();
         menuList.add(new MenuItem(R.drawable.transfer, "Chuyển tiền"));
@@ -116,7 +138,7 @@ public class HomeScreen extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(isHidden[0]) {
-                    double vnd = 13450000; //Lay du lieu tu DB thong qua API
+                    double vnd = balance; //Lay du lieu tu DB thong qua API
                     tvBalacnce.setText(formatHocPhi(vnd));
                     ivEye.setImageResource(R.drawable.eye_slash);
                 } else {

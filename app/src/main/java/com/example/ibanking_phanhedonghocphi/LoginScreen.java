@@ -4,7 +4,7 @@ import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.model.LoginRequest;
 import com.example.ibanking_phanhedonghocphi.model.LoginResponse;
-import com.example.ibanking_phanhedonghocphi.model.TokenResponse;
+
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -18,6 +18,8 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.math.BigInteger;
 
 public class LoginScreen extends AppCompatActivity {
     private EditText etUsername, etPassword;
@@ -33,7 +35,7 @@ public class LoginScreen extends AppCompatActivity {
         etPassword = findViewById(R.id.edtPW);
         btnLogin = findViewById(R.id.btnLogin);
 
-        apiService = ApiClient.getClient().create(ApiService.class);
+        apiService = ApiClient.getUserApiService();
 
         btnLogin.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
@@ -45,7 +47,10 @@ public class LoginScreen extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        Long userId = response.body().getUserID();
+                        // Lưu userID vào Application
+                        UserApp.getInstance().setUserID(response.body().getUserID());
+
+                        BigInteger userId = response.body().getUserID();
                         Toast.makeText(LoginScreen.this, "Login thành công", Toast.LENGTH_SHORT).show();
 
                         // Chuyển qua HomeActivity
