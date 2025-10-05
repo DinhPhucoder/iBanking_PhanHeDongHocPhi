@@ -26,19 +26,27 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.chaos.view.PinView;
+import com.example.ibanking_phanhedonghocphi.api.TuitionApiClient;
+import com.example.ibanking_phanhedonghocphi.api.ApiService;
+import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class TutionScreen extends AppCompatActivity {
     Toolbar toolbar;
-    TextView tvHoTen, tvMSSV, tvHocPhi;
+    TextView tvHoTen, tvMSSV, tvHocPhi, textView9;
     Button btnPay;
     TextInputEditText edtMSSV;
     TableLayout tbl;
     LinearLayout OTPLayout;
     PinView pinView;
+    private ApiService apiService;
 
 
     boolean isOTPVisible = false;
@@ -52,6 +60,8 @@ public class TutionScreen extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        // Khởi tạo retrofit service
+        apiService = TuitionApiClient.getClient().create(ApiService.class);
 
         toolbar = findViewById(R.id.toolbar);
         tvHoTen = findViewById(R.id.tvHoTen);
@@ -62,6 +72,7 @@ public class TutionScreen extends AppCompatActivity {
         btnPay = findViewById(R.id.btnPay);
         OTPLayout = findViewById(R.id.OTPLayout);
         pinView = findViewById(R.id.pinView);
+        textView9 = findViewById(R.id.textView9);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -124,24 +135,36 @@ public class TutionScreen extends AppCompatActivity {
             }
         });
     }
+
     private void showStudentInfo(String mssv) {
-        tbl.setVisibility(View.VISIBLE);
-        btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
-        btnPay.setEnabled(true);
-        if(mssv.equals("1")) {
-            tvMSSV.setText("52300051");
-            tvHoTen.setText("Phan Đình Phú");
-            tvHocPhi.setText(formatSoTien(12345000)); //Lay du lieu tu DB thong qua API
-        } else if(mssv.equals("2")) {
-            tvMSSV.setText("52300055");
-            tvHoTen.setText("Ngô Xuân Quang");
-            tvHocPhi.setText(formatSoTien(1234500)); //Lay du lieu tu DB thong qua API
-        } else {
-            Toast.makeText(TutionScreen.this, "Không tìm thấy sinh viên", Toast.LENGTH_SHORT).show();
-            tbl.setVisibility(View.GONE);
-            btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-            btnPay.setEnabled(false);
-        }
+        // Gọi API lấy thông tin sinh viên
+        apiService.getStudentById(mssv).enqueue(new Callback<Student>() {
+            @Override
+            public void onResponse(Call<Student> call, Response<Student> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Student student = response.body();
+
+                    // Hiển thị table và bật nút Pay
+                    tbl.setVisibility(View.VISIBLE);
+                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                    btnPay.setEnabled(true);
+
+                    // Hiển thị thông tin lên các TextView
+                    tvMSSV.setText(student.getMSSV());
+                    tvHoTen.setText(student.getFullName());
+                    tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
+                    textView9.setText("Vui lòng nhập mã OTP được gửi về\n" + student.getMSSV() + "@student.tdtu.edu.vn");
+                } else {
+                    Toast.makeText(TutionScreen.this, "Không tìm thấy MSSV", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Student> call, Throwable t) {
+                Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
     private String formatSoTien(double hocPhi) {
         Locale vietnam = new Locale("vi", "VN");

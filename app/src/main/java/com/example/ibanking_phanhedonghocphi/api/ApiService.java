@@ -2,6 +2,7 @@ package com.example.ibanking_phanhedonghocphi.api;
 
 import com.example.ibanking_phanhedonghocphi.model.LoginRequest;
 import com.example.ibanking_phanhedonghocphi.model.LoginResponse;
+import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.example.ibanking_phanhedonghocphi.model.TokenResponse;
 import com.example.ibanking_phanhedonghocphi.model.User;
 
@@ -16,4 +17,6 @@ public interface ApiService {
     Call<LoginResponse> login(@Body LoginRequest loginRequest);
     @GET("users/{id}")
     Call<User> getUserById(@Path("id") long id);
+    @GET("students/{id}")
+    Call<Student> getStudentById(@Path("id") String studentId);
 }
