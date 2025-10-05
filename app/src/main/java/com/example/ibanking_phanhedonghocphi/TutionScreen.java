@@ -28,6 +28,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.chaos.view.PinView;
 import com.example.ibanking_phanhedonghocphi.api.TuitionApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
+import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
 import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -41,7 +42,7 @@ import retrofit2.Response;
 public class TutionScreen extends AppCompatActivity {
     Toolbar toolbar;
     TextView tvHoTen, tvMSSV, tvHocPhi, textView9;
-    Button btnPay;
+    Button btnPay, btnContinue;
     TextInputEditText edtMSSV;
     TableLayout tbl;
     LinearLayout OTPLayout;
@@ -49,7 +50,6 @@ public class TutionScreen extends AppCompatActivity {
     private ApiService apiService;
 
 
-    boolean isOTPVisible = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,7 +69,8 @@ public class TutionScreen extends AppCompatActivity {
         tvMSSV = findViewById(R.id.tvMSSV);
         edtMSSV = findViewById(R.id.edtMSSV);
         tbl = findViewById(R.id.tbl);
-        btnPay = findViewById(R.id.btnPay);
+//        btnPay = findViewById(R.id.btnPay);
+        btnContinue = findViewById(R.id.btnContinue);
         OTPLayout = findViewById(R.id.OTPLayout);
         pinView = findViewById(R.id.pinView);
         textView9 = findViewById(R.id.textView9);
@@ -91,49 +92,24 @@ public class TutionScreen extends AppCompatActivity {
             }
         });
 
-        btnPay.setOnClickListener(new View.OnClickListener() {
+        btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!isOTPVisible) {
-                    OTPLayout.setVisibility(View.VISIBLE);
-                    Animation anim = AnimationUtils.loadAnimation(TutionScreen.this, R.anim.slide_up);
-                    OTPLayout.startAnimation(anim);
-                    btnPay.setText("THANH TOÁN");
-                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-                    btnPay.setEnabled(false);
-                    pinView.requestFocus();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT);
-                    isOTPVisible = true;
-                } else {
-                    Toast.makeText(TutionScreen.this, "Đang kiểm tra mã OTP", Toast.LENGTH_SHORT).show();
-                }
-
+//                    OTPLayout.setVisibility(View.VISIBLE);
+//                    Animation anim = AnimationUtils.loadAnimation(TutionScreen.this, R.anim.slide_up);
+//                    OTPLayout.startAnimation(anim);
+                OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+//                    btnPay.setText("THANH TOÁN");
+//                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
+//                    btnPay.setEnabled(false);
+                pinView.requestFocus();
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT);
+//                    Toast.makeText(TutionScreen.this, "Đang kiểm tra mã OTP", Toast.LENGTH_SHORT).show();
             }
         });
-        pinView.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void afterTextChanged(Editable editable) {
 
-            }
-
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                String otp = pinView.getText().toString().trim();
-                if(otp.length() == 6) {
-                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
-                    btnPay.setEnabled(true);
-                } else {
-                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-                    btnPay.setEnabled(false);
-                }
-            }
-        });
     }
 
     private void showStudentInfo(String mssv) {
@@ -146,8 +122,8 @@ public class TutionScreen extends AppCompatActivity {
 
                     // Hiển thị table và bật nút Pay
                     tbl.setVisibility(View.VISIBLE);
-                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
-                    btnPay.setEnabled(true);
+                    btnContinue.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
+                    btnContinue.setEnabled(true);
 
                     // Hiển thị thông tin lên các TextView
                     tvMSSV.setText(student.getMSSV());
@@ -171,12 +147,4 @@ public class TutionScreen extends AppCompatActivity {
         NumberFormat formatterVND = NumberFormat.getCurrencyInstance(vietnam);
         return formatterVND.format(hocPhi).replace("₫", "VND");
     }
-//    private void animateOtpLayout() {
-//        OTPLayout.setTranslationY(OTPLayout.getHeight());
-//        OTPLayout.setVisibility(View.VISIBLE);
-//        OTPLayout.animate()
-//                .translationY(0)
-//                .setDuration(500)
-//                .start();
-//    }
 }

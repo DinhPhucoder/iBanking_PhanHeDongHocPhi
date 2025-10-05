@@ -49,9 +49,7 @@
             android:layout_height="wrap_content"
             android:hint="Nhập mã số sinh viên"
             android:inputType="text"
-            android:textColor="@color/white"
-
-            />
+            android:textColor="@color/white" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TableLayout
@@ -105,7 +103,8 @@
         </TableRow>
 
 
-        <TableRow>
+        <TableRow
+            android:paddingBottom="15dp">
             <TextView
                 android:id="@+id/textView10"
                 android:layout_width="match_parent"
@@ -124,6 +123,25 @@
                 android:textColor="@color/white"
                 android:layout_gravity="bottom"
              />
+        </TableRow>
+
+        <TableRow>
+            <TextView
+                android:id="@+id/textView12"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trạng thái học phí: "
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+
+                />
+            <TextView
+                android:id="@+id/tvTrangThai"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TextView"
+                android:textColor="@color/white" />
         </TableRow>
     </TableLayout>
 
@@ -194,14 +212,14 @@
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnPay"
+        android:id="@+id/btnContinue"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="15dp"
         android:text="TIẾP TỤC"
         android:textColor="@android:color/white"
-        app:backgroundTint="#999999"
+        android:backgroundTint="@color/btn_background"
         app:cornerRadius="10dp"
-        android:enabled="false" />
+        android:enabled="false"/>
 
 </LinearLayout>

@@ -22,6 +22,7 @@ import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.model.User;
+import com.example.ibanking_phanhedonghocphi.UserApp;
 
 
 import java.math.BigDecimal;
@@ -82,6 +83,7 @@ public class HomeScreen extends AppCompatActivity {
                     textView.setText("Xin chào (lỗi tải tên)");
                 }
             });
+
         }
 
         rvMenu = findViewById(R.id.rvMenu);
