@@ -15,7 +15,7 @@ public class ApiClient {
     // URL cho AccountService
 
     private static String USER_BASE_URL = "http://10.0.2.2:8081/";
-
+    // Dien thoai Phu: 192.168.1.47
     private static String ACCOUNT_BASE_URL = "http://10.0.2.2:8082/";
     // URL cho PaymentService
     private static String PAYMENT_BASE_URL = "http://10.0.2.2:8083/";

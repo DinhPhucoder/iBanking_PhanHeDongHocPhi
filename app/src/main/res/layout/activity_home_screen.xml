@@ -12,13 +12,17 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
+        android:layout_marginTop="100dp"
+        android:textColor="#1565C0"
+        android:textSize="30dp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:textSize="30dp"
-        android:textColor="#1565C0"
-        android:textStyle="bold"/>
+        android:singleLine="false"
+        android:scrollHorizontally="false"
+        android:gravity="center"/>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/loginCard"

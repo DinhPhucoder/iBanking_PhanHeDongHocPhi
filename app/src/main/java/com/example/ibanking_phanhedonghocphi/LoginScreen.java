@@ -57,7 +57,6 @@ public class LoginScreen extends AppCompatActivity {
                         UserApp.getInstance().setUserID(response.body().getUserID());
 
                         BigInteger userId = response.body().getUserID();
-                        //Toast.makeText(LoginScreen.this, "Login thành công", Toast.LENGTH_SHORT).show();
 
                         // Chuyển qua HomeActivity
                         Intent intent = new Intent(LoginScreen.this, HomeScreen.class);

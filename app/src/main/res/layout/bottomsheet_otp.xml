@@ -47,7 +47,10 @@
             app:itemWidth="40dp"
             app:lineColor="@color/black"
             app:lineWidth="2dp"
-            app:viewType="rectangle" />
+            app:viewType="rectangle"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSendAgain"

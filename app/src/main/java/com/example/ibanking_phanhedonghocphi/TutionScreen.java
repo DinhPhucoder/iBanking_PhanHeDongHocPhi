@@ -41,11 +41,10 @@ import retrofit2.Response;
 
 public class TutionScreen extends AppCompatActivity {
     Toolbar toolbar;
-    TextView tvHoTen, tvMSSV, tvHocPhi, textView9;
+    TextView tvHoTen, tvMSSV, tvHocPhi;
     Button btnPay, btnContinue;
     TextInputEditText edtMSSV;
     TableLayout tbl;
-    LinearLayout OTPLayout;
     PinView pinView;
     private ApiService apiService;
 
@@ -71,9 +70,6 @@ public class TutionScreen extends AppCompatActivity {
         tbl = findViewById(R.id.tbl);
 //        btnPay = findViewById(R.id.btnPay);
         btnContinue = findViewById(R.id.btnContinue);
-        OTPLayout = findViewById(R.id.OTPLayout);
-        pinView = findViewById(R.id.pinView);
-        textView9 = findViewById(R.id.textView9);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -95,18 +91,9 @@ public class TutionScreen extends AppCompatActivity {
         btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                    OTPLayout.setVisibility(View.VISIBLE);
-//                    Animation anim = AnimationUtils.loadAnimation(TutionScreen.this, R.anim.slide_up);
-//                    OTPLayout.startAnimation(anim);
                 OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
                 otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
-//                    btnPay.setText("THANH TOÁN");
-//                    btnPay.setBackgroundTintList(ColorStateList.valueOf(Color.GRAY));
-//                    btnPay.setEnabled(false);
-                pinView.requestFocus();
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(pinView, InputMethodManager.SHOW_IMPLICIT);
-//                    Toast.makeText(TutionScreen.this, "Đang kiểm tra mã OTP", Toast.LENGTH_SHORT).show();
+
             }
         });
 
@@ -120,16 +107,12 @@ public class TutionScreen extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     Student student = response.body();
 
-                    // Hiển thị table và bật nút Pay
                     tbl.setVisibility(View.VISIBLE);
-                    btnContinue.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
                     btnContinue.setEnabled(true);
-
                     // Hiển thị thông tin lên các TextView
                     tvMSSV.setText(student.getMSSV());
                     tvHoTen.setText(student.getFullName());
                     tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
-                    textView9.setText("Vui lòng nhập mã OTP được gửi về\n" + student.getMSSV() + "@student.tdtu.edu.vn");
                 } else {
                     Toast.makeText(TutionScreen.this, "Không tìm thấy MSSV", Toast.LENGTH_SHORT).show();
                 }

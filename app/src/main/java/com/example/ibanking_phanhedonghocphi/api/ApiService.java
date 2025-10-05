@@ -3,7 +3,6 @@ package com.example.ibanking_phanhedonghocphi.api;
 import com.example.ibanking_phanhedonghocphi.model.LoginRequest;
 import com.example.ibanking_phanhedonghocphi.model.LoginResponse;
 import com.example.ibanking_phanhedonghocphi.model.Student;
-import com.example.ibanking_phanhedonghocphi.model.TokenResponse;
 import com.example.ibanking_phanhedonghocphi.model.User;
 
 import retrofit2.Call;
