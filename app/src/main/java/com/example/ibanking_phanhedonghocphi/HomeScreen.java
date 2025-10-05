@@ -64,7 +64,7 @@ public class HomeScreen extends AppCompatActivity {
         apiService = ApiClient.getUserApiService();
         // Lấy userID từ LoginScreen
         long userId = getIntent().getLongExtra("USER_ID", -1);
-        //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
+//        Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
 
         if (userId != -1) {
             // Gọi API lấy thông tin user

@@ -41,6 +41,12 @@ public class LoginScreen extends AppCompatActivity {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
+            // Kiểm tra username/password rỗng
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(LoginScreen.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
+                return; // Dừng luôn, không gọi API
+            }
+
             LoginRequest request = new LoginRequest(username, password);
 
             apiService.login(request).enqueue(new Callback<LoginResponse>() {
@@ -51,11 +57,11 @@ public class LoginScreen extends AppCompatActivity {
                         UserApp.getInstance().setUserID(response.body().getUserID());
 
                         BigInteger userId = response.body().getUserID();
-                        Toast.makeText(LoginScreen.this, "Login thành công", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(LoginScreen.this, "Login thành công", Toast.LENGTH_SHORT).show();
 
                         // Chuyển qua HomeActivity
                         Intent intent = new Intent(LoginScreen.this, HomeScreen.class);
-                        intent.putExtra("USER_ID", userId);
+                        intent.putExtra("USER_ID", userId.longValue());
                         startActivity(intent);
                         finish();
                     } else {

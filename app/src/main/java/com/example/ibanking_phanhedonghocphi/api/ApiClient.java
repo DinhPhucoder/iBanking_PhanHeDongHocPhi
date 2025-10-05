@@ -14,11 +14,11 @@ import java.math.BigDecimal;
 public class ApiClient {
     // URL cho AccountService
 
-    private static String USER_BASE_URL = "http://192.168.1.9:8081/";
+    private static String USER_BASE_URL = "http://10.0.2.2:8081/";
 
-    private static String ACCOUNT_BASE_URL = "http://192.168.1.9:8082/";
+    private static String ACCOUNT_BASE_URL = "http://10.0.2.2:8082/";
     // URL cho PaymentService
-    private static String PAYMENT_BASE_URL = "http://192.168.1.9:8083/";
+    private static String PAYMENT_BASE_URL = "http://10.0.2.2:8083/";
 
     private static Retrofit accountRetrofit;
     private static Retrofit paymentRetrofit;
