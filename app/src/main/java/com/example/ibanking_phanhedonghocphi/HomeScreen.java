@@ -22,10 +22,10 @@ import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.model.User;
-import com.example.ibanking_phanhedonghocphi.UserApp;
 
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,7 +69,7 @@ public class HomeScreen extends AppCompatActivity {
 
         if (userId != -1) {
             // Gọi API lấy thông tin user
-            apiService.getUserById(userId).enqueue(new Callback<User>() {
+            apiService.getUserById(BigInteger.valueOf(userId)).enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
@@ -93,13 +93,13 @@ public class HomeScreen extends AppCompatActivity {
         textView = findViewById(R.id.textView);
         accountServiceApi = ApiClient.getAccountApiService();
 
-        accountServiceApi.getBalance(UserApp.getInstance().getUserID()).enqueue(new Callback<BigDecimal>() {
+        accountServiceApi.getBalance(User.getInstance().getUserId()).enqueue(new Callback<BigDecimal>() {
             @Override
             public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     balance = response.body().doubleValue();
                 } else {
-                    Toast.makeText(HomeScreen.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(HomeScreen.this, "Quý code gì kì", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -126,6 +126,7 @@ public class HomeScreen extends AppCompatActivity {
                 Class<?> targetActivity = activityMap.get(item.getTitle());
                 if (targetActivity != null) {
                     Intent intent = new Intent(HomeScreen.this, targetActivity);
+                    intent.putExtra("USER_ID", userId);
                     startActivity(intent);
                 } else {
                     Toast.makeText(HomeScreen.this, "Chưa có chức năng", Toast.LENGTH_SHORT).show();

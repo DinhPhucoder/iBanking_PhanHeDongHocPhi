@@ -1,18 +1,9 @@
 package com.example.ibanking_phanhedonghocphi;
 
-import android.content.Context;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +17,9 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.chaos.view.PinView;
-import com.example.ibanking_phanhedonghocphi.api.TuitionApiClient;
+import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
+import com.example.ibanking_phanhedonghocphi.api.TuitionServiceApi;
 import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
 import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.google.android.material.textfield.TextInputEditText;
@@ -41,12 +33,12 @@ import retrofit2.Response;
 
 public class TutionScreen extends AppCompatActivity {
     Toolbar toolbar;
-    TextView tvHoTen, tvMSSV, tvHocPhi;
+    TextView tvHoTen, tvMSSV, tvHocPhi, tvStatus;
     Button btnPay, btnContinue;
     TextInputEditText edtMSSV;
     TableLayout tbl;
     PinView pinView;
-    private ApiService apiService;
+    private TuitionServiceApi tuitionServiceApi;
 
 
     @Override
@@ -60,12 +52,13 @@ public class TutionScreen extends AppCompatActivity {
             return insets;
         });
         // Khởi tạo retrofit service
-        apiService = TuitionApiClient.getClient().create(ApiService.class);
+        tuitionServiceApi = ApiClient.getTuitionApiService();
 
         toolbar = findViewById(R.id.toolbar);
         tvHoTen = findViewById(R.id.tvHoTen);
         tvHocPhi = findViewById(R.id.tvHocPhi);
         tvMSSV = findViewById(R.id.tvMSSV);
+        tvStatus = findViewById(R.id.tvStatus);
         edtMSSV = findViewById(R.id.edtMSSV);
         tbl = findViewById(R.id.tbl);
 //        btnPay = findViewById(R.id.btnPay);
@@ -75,6 +68,9 @@ public class TutionScreen extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.back);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        long userId = getIntent().getLongExtra("USER_ID", -1);
+        //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
 
 
         edtMSSV.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -92,8 +88,10 @@ public class TutionScreen extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                Bundle bundle = new Bundle();
+                bundle.putLong("USER_ID", userId); //  Truyền userId vào Bundle
+                otpBottomSheet.setArguments(bundle); //  Gắn bundle vào OtpBottomSheet
                 otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
-
             }
         });
 
@@ -101,7 +99,7 @@ public class TutionScreen extends AppCompatActivity {
 
     private void showStudentInfo(String mssv) {
         // Gọi API lấy thông tin sinh viên
-        apiService.getStudentById(mssv).enqueue(new Callback<Student>() {
+        tuitionServiceApi.getStudentById(mssv).enqueue(new Callback<Student>() {
             @Override
             public void onResponse(Call<Student> call, Response<Student> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -112,6 +110,7 @@ public class TutionScreen extends AppCompatActivity {
                     // Hiển thị thông tin lên các TextView
                     tvMSSV.setText(student.getMSSV());
                     tvHoTen.setText(student.getFullName());
+                    tvStatus.setText(student.getStatus());
                     tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
                 } else {
                     Toast.makeText(TutionScreen.this, "Không tìm thấy MSSV", Toast.LENGTH_SHORT).show();
@@ -130,4 +129,6 @@ public class TutionScreen extends AppCompatActivity {
         NumberFormat formatterVND = NumberFormat.getCurrencyInstance(vietnam);
         return formatterVND.format(hocPhi).replace("₫", "VND");
     }
+
+
 }

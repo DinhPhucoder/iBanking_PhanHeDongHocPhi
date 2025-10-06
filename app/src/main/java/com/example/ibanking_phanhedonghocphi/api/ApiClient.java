@@ -19,10 +19,12 @@ public class ApiClient {
     private static String ACCOUNT_BASE_URL = "http://10.0.2.2:8082/";
     // URL cho PaymentService
     private static String PAYMENT_BASE_URL = "http://10.0.2.2:8083/";
+    private static String TUITION_BASE_URL = "http://10.0.2.2:8084/";
 
     private static Retrofit accountRetrofit;
     private static Retrofit paymentRetrofit;
     private static Retrofit userRetrofit;
+    private static Retrofit tuitionRetrofit;
 
 
     // Custom Gson để handle BigInteger và BigDecimal
@@ -63,6 +65,16 @@ public class ApiClient {
         }
         return userRetrofit;
     }
+    // Retrofit cho TuitionService
+    public static Retrofit getTuitionRetrofit() {
+        if (tuitionRetrofit == null) {
+            tuitionRetrofit = new Retrofit.Builder()
+                    .baseUrl(TUITION_BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return tuitionRetrofit;
+    }
 
     // Retrofit cho AccountService
     public static Retrofit getAccountRetrofit() {
@@ -89,6 +101,10 @@ public class ApiClient {
     // API Service cho UserService
     public static ApiService getUserApiService() {
         return getUserRetrofit().create(ApiService.class);
+    }
+    // API Service cho TuitionService
+    public static TuitionServiceApi getTuitionApiService() {
+        return getTuitionRetrofit().create(TuitionServiceApi.class);
     }
 
     // API Service cho AccountService

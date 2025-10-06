@@ -4,6 +4,7 @@ import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.model.LoginRequest;
 import com.example.ibanking_phanhedonghocphi.model.LoginResponse;
+import com.example.ibanking_phanhedonghocphi.model.User;
 
 
 import retrofit2.Call;
@@ -44,7 +45,7 @@ public class LoginScreen extends AppCompatActivity {
             // Kiểm tra username/password rỗng
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(LoginScreen.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-                return; // Dừng luôn, không gọi API
+                return;
             }
 
             LoginRequest request = new LoginRequest(username, password);
@@ -52,21 +53,23 @@ public class LoginScreen extends AppCompatActivity {
             apiService.login(request).enqueue(new Callback<LoginResponse>() {
                 @Override
                 public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        // Lưu userID vào Application
-                        UserApp.getInstance().setUserID(response.body().getUserID());
+                    if (response.isSuccessful() && response.body() != null && response.body().getUserID() != null) {
+
+                        // Đăng nhập thành công
+                        User.getInstance().setUserId(response.body().getUserID());
 
                         BigInteger userId = response.body().getUserID();
-
-                        // Chuyển qua HomeActivity
                         Intent intent = new Intent(LoginScreen.this, HomeScreen.class);
                         intent.putExtra("USER_ID", userId.longValue());
                         startActivity(intent);
                         finish();
+
                     } else {
+                        // Đăng nhập thất bại
                         Toast.makeText(LoginScreen.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
                     }
                 }
+
 
                 @Override
                 public void onFailure(Call<LoginResponse> call, Throwable t) {

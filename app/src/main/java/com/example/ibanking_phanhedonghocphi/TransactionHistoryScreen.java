@@ -1,6 +1,7 @@
 package com.example.ibanking_phanhedonghocphi;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,10 +15,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ibanking_phanhedonghocphi.adapter.TransactionAdapter;
 import com.example.ibanking_phanhedonghocphi.api.AccountServiceApi;
+import com.example.ibanking_phanhedonghocphi.api.ApiService;
+import com.example.ibanking_phanhedonghocphi.api.TuitionServiceApi;
+import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.example.ibanking_phanhedonghocphi.model.TransactionItem;
+import com.example.ibanking_phanhedonghocphi.model.User;
 import com.google.android.material.appbar.MaterialToolbar;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +38,14 @@ import retrofit2.Response;
 public class TransactionHistoryScreen extends AppCompatActivity {
     RecyclerView rcvHistory;
     MaterialToolbar toolbar;
-    TextView tvBalance;
+    TextView tvBalance, tvFullName, tvSDT, tvMail;
 
     List<TransactionItem> list = new ArrayList<>();
     double balance;
 
 
     private AccountServiceApi accountServiceApi;
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +60,14 @@ public class TransactionHistoryScreen extends AppCompatActivity {
         rcvHistory = findViewById(R.id.rcvHistory);
         toolbar = findViewById(R.id.toolbar2);
         tvBalance = findViewById(R.id.tvBalance);
+        tvFullName = findViewById(R.id.tvFullName);
+        tvSDT = findViewById(R.id.tvSDT);
+        tvMail = findViewById(R.id.tvMail);
 
         accountServiceApi = ApiClient.getAccountApiService();
+        apiService = ApiClient.getUserApiService();
 
-        accountServiceApi.getBalance(UserApp.getInstance().getUserID()).enqueue(new Callback<BigDecimal>() {
+        accountServiceApi.getBalance(User.getInstance().getUserId()).enqueue(new Callback<BigDecimal>() {
             @Override
             public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -73,6 +84,28 @@ public class TransactionHistoryScreen extends AppCompatActivity {
             }
         });
 
+        apiService.getUserById(User.getInstance().getUserId()).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    tvFullName.setText(user.getFullName());
+                    tvMail.setText(user.getEmail());
+                    tvSDT.setText(user.getPhone());
+                } else {
+                    Toast.makeText(TransactionHistoryScreen.this, "Không lấy được thông tin người dùng", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(TransactionHistoryScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
+
 
 
         setSupportActionBar(toolbar);
@@ -84,7 +117,7 @@ public class TransactionHistoryScreen extends AppCompatActivity {
 
 
 
-        accountServiceApi.getHistory(UserApp.getInstance().getUserID()).enqueue(new Callback<List<TransactionItem>>() {
+        accountServiceApi.getHistory(User.getInstance().getUserId()).enqueue(new Callback<List<TransactionItem>>() {
             @Override
             public void onResponse(Call<List<TransactionItem>> call, Response<List<TransactionItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {

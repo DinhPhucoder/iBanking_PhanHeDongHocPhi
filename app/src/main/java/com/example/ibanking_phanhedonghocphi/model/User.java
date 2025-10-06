@@ -1,27 +1,66 @@
 package com.example.ibanking_phanhedonghocphi.model;
 
-public class User {
-    private Long userId;
+import android.app.Application;
+import java.math.BigInteger;
+
+public class User extends Application {
+    private static User instance;
+    private BigInteger userId;
     private String username;
     private String fullName;
     private String email;
     private String phone;
 
-    public User() {
-        // Constructor mặc định
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        instance = this;
+    }
+    public static User getInstance() {
+        if (instance == null) {
+            instance = new User();
+        }
+        return instance;
     }
 
     // Getters and setters
-    public Long getUserId() {
+    public BigInteger getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(BigInteger userId) {
         this.userId = userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getFullName() {
         return fullName;
     }
 
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 }
