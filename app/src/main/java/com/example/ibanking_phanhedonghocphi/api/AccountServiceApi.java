@@ -12,27 +12,24 @@ import retrofit2.http.*;
 
 public interface AccountServiceApi {
 
-    // GET balance
     @GET("accounts/{userId}/balance")
     Call<BigDecimal> getBalance(@Path("userId") BigInteger userId);
 
-    // GET history
     @GET("accounts/{userId}/history")
     Call<List<TransactionItem>> getHistory(@Path("userId") BigInteger userId);
 
-    // POST check balance
-    @POST("accounts/checkBalance")
-    Call<Boolean> checkBalance(@Body TransactionRequest request);
+    // Tạo giao dịch (server tự sinh transactionId)
+    @POST("transactions")
+    Call<TransactionResponse> createTransaction(@Body TransactionRequest request);
 
-    // PUT update balance
     @PUT("accounts/{userId}/balance")
-    Call<BalanceResponse> updateBalance(@Path("userId") BigInteger userId, @Body BalanceUpdateRequest request);
+    Call<BalanceResponse> updateBalance(@Path("userId") BigInteger userId,
+                                        @Body BalanceUpdateRequest request); // optional: nội bộ
 
-    // POST lock account
     @POST("accounts/{userId}/lock")
     Call<LockResponse> lockAccount(@Path("userId") BigInteger userId);
 
-    // POST unlock account
     @POST("accounts/{userId}/unlock")
-    Call<UnlockResponse> unlockAccount(@Path("userId") BigInteger userId, @Body UnlockRequest request);
+    Call<UnlockResponse> unlockAccount(@Path("userId") BigInteger userId,
+                                       @Body UnlockRequest request);
 }

@@ -5,11 +5,10 @@ import java.math.BigInteger;
 public class LockResponse {
     private Boolean locked;
     private String lockKey;
-    private BigInteger expiry;
-
+    private Long expiry;
     public LockResponse() {}
 
-    public LockResponse(Boolean locked, String lockKey, BigInteger expiry) {
+    public LockResponse(Boolean locked, String lockKey, Long expiry) {
         this.locked = locked;
         this.lockKey = lockKey;
         this.expiry = expiry;
@@ -22,6 +21,6 @@ public class LockResponse {
     public String getLockKey() { return lockKey; }
     public void setLockKey(String lockKey) { this.lockKey = lockKey; }
 
-    public BigInteger getExpiry() { return expiry; }
-    public void setExpiry(BigInteger expiry) { this.expiry = expiry; }
+    public Long getExpiry() { return expiry; }
+    public void setExpiry(Long expiry) { this.expiry = expiry; }
 }

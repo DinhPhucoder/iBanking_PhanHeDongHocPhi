@@ -111,7 +111,8 @@ public class TutionScreen extends AppCompatActivity {
                     tvMSSV.setText(student.getMSSV());
                     tvHoTen.setText(student.getFullName());
                     tvStatus.setText(student.getStatus());
-                    tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
+                    //tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
+                    tvHocPhi.setText(formatSoTien(student.getTuitionFee()));
                 } else {
                     Toast.makeText(TutionScreen.this, "Không tìm thấy MSSV", Toast.LENGTH_SHORT).show();
                 }

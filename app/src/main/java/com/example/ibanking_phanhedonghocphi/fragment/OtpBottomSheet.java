@@ -60,7 +60,7 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
             // transactionId = bundle.getString("TRANSACTION_ID", null);
             if (userId != -1) {
                 Toast.makeText(getContext(), "Nhận userId: " + userId, Toast.LENGTH_SHORT).show();
-                getUserEmail(userId); // 👈 Gọi hàm lấy email
+                getUserEmail(userId);
             } else {
                 Toast.makeText(getContext(), "Không nhận được userId", Toast.LENGTH_SHORT).show();
             }
