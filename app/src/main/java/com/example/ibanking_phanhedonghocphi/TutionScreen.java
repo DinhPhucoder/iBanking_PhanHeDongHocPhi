@@ -93,24 +93,35 @@ public class TutionScreen extends AppCompatActivity {
         btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
-                Bundle bundle = new Bundle();
-                bundle.putLong("USER_ID", userId); //  Truyền userId vào Bundle
-                otpBottomSheet.setArguments(bundle); //  Gắn bundle vào OtpBottomSheet
-                otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
                 if (selectedStudent == null) {
                     Toast.makeText(TutionScreen.this, "Vui lòng nhập MSSV hợp lệ", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 // Khởi tạo payment: userId, mssv, amount
+                // Fix BigDecimal creation to avoid parsing issues
+                double tuitionFee = selectedStudent.getTuitionFee();
+                java.math.BigDecimal amount = java.math.BigDecimal.valueOf(tuitionFee).setScale(2, java.math.RoundingMode.HALF_UP);
+                
                 PaymentInitRequest req = new PaymentInitRequest(
                         java.math.BigInteger.valueOf(userId),
                         selectedStudent.getMSSV(),
-                        java.math.BigDecimal.valueOf(selectedStudent.getTuitionFee())
+                        amount
                 );
+                // Debug: Log request details
+                Toast.makeText(TutionScreen.this, "Đang gửi request: userId=" + userId + ", mssv=" + selectedStudent.getMSSV() + ", amount=" + selectedStudent.getTuitionFee(), Toast.LENGTH_LONG).show();
+                
                 paymentRepository.initiate(req).enqueue(new retrofit2.Callback<PaymentInitResponse>() {
                     @Override
                     public void onResponse(retrofit2.Call<PaymentInitResponse> call, retrofit2.Response<PaymentInitResponse> response) {
+                        // Debug: Log response details
+                        String debugMsg = "Response code: " + response.code() + ", Success: " + response.isSuccessful();
+                        if (response.body() != null) {
+                            debugMsg += ", TransactionId: " + response.body().getTransactionId();
+                        } else {
+                            debugMsg += ", Body is null";
+                        }
+                        Toast.makeText(TutionScreen.this, debugMsg, Toast.LENGTH_LONG).show();
+                        
                         if (response.isSuccessful() && response.body() != null) {
                             PaymentInitResponse res = response.body();
                             OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
@@ -119,17 +130,43 @@ public class TutionScreen extends AppCompatActivity {
                             bundle.putString("TRANSACTION_ID", res.getTransactionId());
                             bundle.putString("OTP_ID", res.getOtpId() != null ? res.getOtpId().toString() : null);
                             bundle.putString("MSSV", selectedStudent.getMSSV());
-                            bundle.putDouble("AMOUNT", selectedStudent.getTuitionFee());
                             otpBottomSheet.setArguments(bundle);
                             otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
                         } else {
-                            Toast.makeText(TutionScreen.this, "Khởi tạo giao dịch thất bại", Toast.LENGTH_SHORT).show();
+                            // More detailed error message
+                            String errorMsg = "Khởi tạo giao dịch thất bại";
+                            if (!response.isSuccessful()) {
+                                errorMsg += " - HTTP " + response.code();
+                                
+                                // Handle specific error codes
+                                if (response.code() == 409) {
+                                    errorMsg = "Giao dịch đã tồn tại hoặc có xung đột dữ liệu (409)";
+                                } else if (response.code() == 400) {
+                                    errorMsg = "Dữ liệu không hợp lệ (400)";
+                                } else if (response.code() == 404) {
+                                    errorMsg = "Không tìm thấy tài nguyên (404)";
+                                } else if (response.code() == 500) {
+                                    errorMsg = "Lỗi server (500)";
+                                }
+                                
+                                if (response.errorBody() != null) {
+                                    try {
+                                        String errorBody = response.errorBody().string();
+                                        errorMsg += "\nChi tiết: " + errorBody;
+                                    } catch (Exception e) {
+                                        errorMsg += " (Không đọc được error body)";
+                                    }
+                                }
+                            } else if (response.body() == null) {
+                                errorMsg += " - Response body null";
+                            }
+                            Toast.makeText(TutionScreen.this, errorMsg, Toast.LENGTH_LONG).show();
                         }
                     }
 
                     @Override
                     public void onFailure(retrofit2.Call<PaymentInitResponse> call, Throwable t) {
-                        Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -152,7 +189,6 @@ public class TutionScreen extends AppCompatActivity {
                     tvMSSV.setText(student.getMSSV());
                     tvHoTen.setText(student.getFullName());
                     tvStatus.setText(student.getStatus());
-                    //tvHocPhi.setText(String.valueOf(student.getTuitionFee()));
                     tvHocPhi.setText(formatSoTien(student.getTuitionFee()));
                 } else {
                     Toast.makeText(TutionScreen.this, "Không tìm thấy MSSV", Toast.LENGTH_SHORT).show();

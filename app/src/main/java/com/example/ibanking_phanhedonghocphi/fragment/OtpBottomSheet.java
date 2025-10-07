@@ -57,23 +57,22 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
         Bundle bundle = getArguments();
         if (bundle != null) {
             userId = bundle.getLong("USER_ID", -1);
-            // transactionId = bundle.getString("TRANSACTION_ID", null);
+            transactionId = bundle.getString("TRANSACTION_ID", null);
             if (userId != -1) {
-                //Toast.makeText(getContext(), "Nhận userId: " + userId, Toast.LENGTH_SHORT).show();
                 getUserEmail(userId);
             } else {
                 Toast.makeText(getContext(), "Không nhận được userId", Toast.LENGTH_SHORT).show();
             }
-            // if (transactionId == null) {
-            //     Toast.makeText(getContext(), "Thiếu transactionId cho OTP", Toast.LENGTH_SHORT).show();
-            // }
+            if (transactionId == null) {
+                Toast.makeText(getContext(), "Thiếu transactionId cho OTP", Toast.LENGTH_SHORT).show();
+            }
         }
 
 
         PinView pinView = view.findViewById(R.id.pinView);
         MaterialButton btnSendAgain = view.findViewById(R.id.btnSendAgain);
         MaterialButton btnPay = view.findViewById(R.id.btnPay);
-        TextView tv1 = view.findViewById(R.id.tv1);
+        tv1 = view.findViewById(R.id.tv1);
         TextView tvCountdown = view.findViewById(R.id.tvCountDown);
 
         pinView.requestFocus();
@@ -88,7 +87,7 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
         btnSendAgain.setOnClickListener(v -> {
             // Gọi API generate OTP
             otpApi = ApiClient.getOtpApiService();
-            GenerateOtpRequest request = new GenerateOtpRequest(null, BigInteger.valueOf(userId));
+            GenerateOtpRequest request = new GenerateOtpRequest(transactionId, BigInteger.valueOf(userId));
             otpApi.generateOtp(request).enqueue(new Callback<GenerateOtpResponse>() {
                 @Override
                 public void onResponse(Call<GenerateOtpResponse> call, Response<GenerateOtpResponse> response) {
