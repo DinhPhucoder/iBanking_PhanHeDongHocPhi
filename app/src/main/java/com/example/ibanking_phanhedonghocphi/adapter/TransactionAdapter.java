@@ -61,9 +61,9 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
         holder.tvTimestamp.setText(sdf.format(date));
         holder.tvDescription.setText(item.getDescription());
-        String amountText = ((item.getAmount() >= 0 ? "+" : "") + formatSoTien(item.getAmount()));
+        String amountText = ((item.getAmount().signum() >= 0 ? "+" : "") + formatSoTien(item.getAmount().doubleValue()));
         holder.tvAmount.setText(amountText);
-        if(item.getAmount()>= 0) {
+        if(item.getAmount().signum()>= 0) {
             holder.tvAmount.setTextColor(ContextCompat.getColor(context, R.color.green));
             holder.tvAmountUnit.setTextColor(ContextCompat.getColor(context, R.color.green));
             holder.ivTransaction.setImageResource(R.drawable.down);

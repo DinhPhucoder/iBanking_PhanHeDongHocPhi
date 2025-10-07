@@ -1,10 +1,11 @@
 package com.example.ibanking_phanhedonghocphi.model;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class TransactionItem {
-    private BigInteger transactionId;
-    private double amount;
+    private String transactionId;
+    private BigDecimal amount;
     private String type;
     private String description;
     private String timestamp;
@@ -14,26 +15,26 @@ public class TransactionItem {
     }
 
     // Constructor cho dữ liệu fake
-    public TransactionItem(long timestamp, double amount, String description) {
+    public TransactionItem(long timestamp, BigDecimal amount, String description) {
         this.timestamp = String.valueOf(timestamp);
         this.amount = amount;
         this.description = description;
     }
 
     // Getters và Setters
-    public BigInteger getTransactionId() {
+    public String getTransactionId() {
         return transactionId;
     }
 
-    public void setTransactionId(BigInteger transactionId) {
+    public void setTransactionId(String transactionId) {
         this.transactionId = transactionId;
     }
 
-    public double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
