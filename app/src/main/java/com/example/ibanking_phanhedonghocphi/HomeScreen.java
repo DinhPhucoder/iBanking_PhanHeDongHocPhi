@@ -50,7 +50,7 @@ public class HomeScreen extends AppCompatActivity {
     private ApiService apiService;
     private AccountServiceApi accountServiceApi;
 
-    Double balance;
+    Double balance = 0;
 
     private Map<String, Class<?>> activityMap;
     final boolean[] isHidden = {true};
@@ -108,13 +108,15 @@ public class HomeScreen extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     balance = response.body().doubleValue();
                 } else {
-                    Toast.makeText(HomeScreen.this, "Quý code gì kì", Toast.LENGTH_SHORT).show();
+                    // Nếu không có dữ liệu hoặc lỗi truy cập, gán 0 và không báo lỗi
+                    balance = 0d;
                 }
             }
 
             @Override
             public void onFailure(Call<BigDecimal> call, Throwable t) {
-                Toast.makeText(HomeScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                // Lỗi kết nối: gán 0 và không hiện toast
+                balance = 0d;
             }
         });
         // Tạo danh sách chức năng
@@ -150,7 +152,7 @@ public class HomeScreen extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(isHidden[0]) {
-                    double vnd = balance; //Lay du lieu tu DB thong qua API
+                    double vnd = balance != null ? balance : 0d; // fallback 0 nếu null
                     tvBalacnce.setText(formatHocPhi(vnd));
                     ivEye.setImageResource(R.drawable.eye_slash);
                 } else {

@@ -12,7 +12,11 @@ public interface PaymentServiceApi {
     @POST("payments")
     Call<PaymentInitResponse> initiatePayment(@Body PaymentInitRequest request);
 
-    // PUT confirm payment
-    @PUT("payments/{transactionId}/confirm")
-    Call<PaymentConfirmResponse> confirmPayment(@Path("transactionId") String transactionId, @Body PaymentConfirmRequest request);
+    // GET pre-generated transactionId (optional)
+    @GET("payments/transaction-id")
+    Call<TransactionIdResponse> getTransactionId();
+
+    // POST confirm payment (backend yêu cầu body chứa transactionId, otpId, otpCode)
+    @POST("payments/confirm")
+    Call<PaymentConfirmResponse> confirmPayment(@Body PaymentConfirmRequest request);
 }

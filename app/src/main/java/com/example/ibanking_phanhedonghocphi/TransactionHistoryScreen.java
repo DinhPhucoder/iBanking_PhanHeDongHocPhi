@@ -41,7 +41,7 @@ public class TransactionHistoryScreen extends AppCompatActivity {
     TextView tvBalance, tvFullName, tvSDT, tvMail;
 
     List<TransactionItem> list = new ArrayList<>();
-    double balance;
+    double balance = 0d;
 
 
     private AccountServiceApi accountServiceApi;
@@ -72,15 +72,16 @@ public class TransactionHistoryScreen extends AppCompatActivity {
             public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     balance = response.body().doubleValue();
-                    tvBalance.setText(formatSoTien(balance));
                 } else {
-                    Toast.makeText(TransactionHistoryScreen.this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
+                    balance = 0d; // fallback 0, không hiện lỗi
                 }
+                tvBalance.setText(formatSoTien(balance));
             }
 
             @Override
             public void onFailure(Call<BigDecimal> call, Throwable t) {
-                Toast.makeText(TransactionHistoryScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                balance = 0d; // fallback 0
+                tvBalance.setText(formatSoTien(balance));
             }
         });
 
@@ -116,13 +117,14 @@ public class TransactionHistoryScreen extends AppCompatActivity {
             public void onResponse(Call<List<TransactionItem>> call, Response<List<TransactionItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     list = response.body();
-                    updateTransactionList(list);
                 } else {
+                    list = new ArrayList<>(); // fallback empty
                 }
+                updateTransactionList(list);
             }
             @Override
             public void onFailure(Call<List<TransactionItem>> call, Throwable t) {
-                Toast.makeText(TransactionHistoryScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                updateTransactionList(new ArrayList<>()); // fallback empty, không văng app
             }
         });
     }

@@ -21,6 +21,9 @@ import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.api.TuitionServiceApi;
 import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
+import com.example.ibanking_phanhedonghocphi.repository.PaymentRepository;
+import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitRequest;
+import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse;
 import com.example.ibanking_phanhedonghocphi.model.Student;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -39,6 +42,8 @@ public class TutionScreen extends AppCompatActivity {
     TableLayout tbl;
     PinView pinView;
     private TuitionServiceApi tuitionServiceApi;
+    private PaymentRepository paymentRepository;
+    private Student selectedStudent;
 
 
     @Override
@@ -53,6 +58,7 @@ public class TutionScreen extends AppCompatActivity {
         });
         // Khởi tạo retrofit service
         tuitionServiceApi = ApiClient.getTuitionApiService();
+        paymentRepository = new PaymentRepository();
 
         toolbar = findViewById(R.id.toolbar);
         tvHoTen = findViewById(R.id.tvHoTen);
@@ -92,6 +98,40 @@ public class TutionScreen extends AppCompatActivity {
                 bundle.putLong("USER_ID", userId); //  Truyền userId vào Bundle
                 otpBottomSheet.setArguments(bundle); //  Gắn bundle vào OtpBottomSheet
                 otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                if (selectedStudent == null) {
+                    Toast.makeText(TutionScreen.this, "Vui lòng nhập MSSV hợp lệ", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Khởi tạo payment: userId, mssv, amount
+                PaymentInitRequest req = new PaymentInitRequest(
+                        java.math.BigInteger.valueOf(userId),
+                        selectedStudent.getMSSV(),
+                        java.math.BigDecimal.valueOf(selectedStudent.getTuitionFee())
+                );
+                paymentRepository.initiate(req).enqueue(new retrofit2.Callback<PaymentInitResponse>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<PaymentInitResponse> call, retrofit2.Response<PaymentInitResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            PaymentInitResponse res = response.body();
+                            OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                            Bundle bundle = new Bundle();
+                            bundle.putLong("USER_ID", userId);
+                            bundle.putString("TRANSACTION_ID", res.getTransactionId());
+                            bundle.putString("OTP_ID", res.getOtpId() != null ? res.getOtpId().toString() : null);
+                            bundle.putString("MSSV", selectedStudent.getMSSV());
+                            bundle.putDouble("AMOUNT", selectedStudent.getTuitionFee());
+                            otpBottomSheet.setArguments(bundle);
+                            otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                        } else {
+                            Toast.makeText(TutionScreen.this, "Khởi tạo giao dịch thất bại", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<PaymentInitResponse> call, Throwable t) {
+                        Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
 
@@ -104,6 +144,7 @@ public class TutionScreen extends AppCompatActivity {
             public void onResponse(Call<Student> call, Response<Student> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     Student student = response.body();
+                    selectedStudent = student; // giữ nguyên hiển thị cũ, chỉ gán để dùng khi initiate
 
                     tbl.setVisibility(View.VISIBLE);
                     btnContinue.setEnabled(true);
