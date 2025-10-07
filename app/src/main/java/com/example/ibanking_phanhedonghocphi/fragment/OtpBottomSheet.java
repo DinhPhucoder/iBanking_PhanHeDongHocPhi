@@ -21,6 +21,10 @@ import com.chaos.view.PinView;
 import com.example.ibanking_phanhedonghocphi.R;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
+import com.example.ibanking_phanhedonghocphi.api.OTPNotificationServiceApi;
+import com.example.ibanking_phanhedonghocphi.model.dtoOtp.GenerateOtpRequest;
+import com.example.ibanking_phanhedonghocphi.model.dtoOtp.GenerateOtpResponse;
+import com.example.ibanking_phanhedonghocphi.model.dtoOtp.EmailRequest;
 import com.example.ibanking_phanhedonghocphi.model.User;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.button.MaterialButton;
@@ -34,9 +38,10 @@ import retrofit2.Response;
 public class OtpBottomSheet extends BottomSheetDialogFragment {
 
     private ApiService apiService;
-    private long userId; // 👈 Biến toàn cục lưu userId để dùng trong nhiều hàm
-    private TextView tv1;
-
+    private OTPNotificationServiceApi otpApi;
+    private long userId;
+    private String transactionId;
+    TextView tv1;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -49,24 +54,22 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        tv1 = view.findViewById(R.id.tv1);
-        // ============================
-        // 🔹 NHẬN USER_ID TỪ BUNDLE
-        // ============================
         Bundle bundle = getArguments();
         if (bundle != null) {
             userId = bundle.getLong("USER_ID", -1);
+            // transactionId = bundle.getString("TRANSACTION_ID", null);
             if (userId != -1) {
                 Toast.makeText(getContext(), "Nhận userId: " + userId, Toast.LENGTH_SHORT).show();
                 getUserEmail(userId); // 👈 Gọi hàm lấy email
             } else {
                 Toast.makeText(getContext(), "Không nhận được userId", Toast.LENGTH_SHORT).show();
             }
+            // if (transactionId == null) {
+            //     Toast.makeText(getContext(), "Thiếu transactionId cho OTP", Toast.LENGTH_SHORT).show();
+            // }
         }
 
-        // ============================
-        // 🔹 CÁC THÀNH PHẦN VIEW KHÁC
-        // ============================
+
         PinView pinView = view.findViewById(R.id.pinView);
         MaterialButton btnSendAgain = view.findViewById(R.id.btnSendAgain);
         MaterialButton btnPay = view.findViewById(R.id.btnPay);
@@ -82,9 +85,43 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
             }
         }, 200);
 
-        btnSendAgain.setOnClickListener(v ->
-                Toast.makeText(getContext(), "OTP sent again!", Toast.LENGTH_SHORT).show()
-        );
+        btnSendAgain.setOnClickListener(v -> {
+            // Gọi API generate OTP
+            otpApi = ApiClient.getOtpApiService();
+            GenerateOtpRequest request = new GenerateOtpRequest(null, BigInteger.valueOf(userId));
+            otpApi.generateOtp(request).enqueue(new Callback<GenerateOtpResponse>() {
+                @Override
+                public void onResponse(Call<GenerateOtpResponse> call, Response<GenerateOtpResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        // Sau khi generate thành công => gửi email OTP
+                        String newOtpId = response.body().getOtpId();
+                        EmailRequest emailReq = new EmailRequest(BigInteger.valueOf(userId), newOtpId);
+                        otpApi.sendEmail(emailReq).enqueue(new Callback<Void>() {
+                            @Override
+                            public void onResponse(Call<Void> call, Response<Void> emailResp) {
+                                if (emailResp.isSuccessful()) {
+                                    Toast.makeText(getContext(), "Đã gửi lại mã OTP", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(getContext(), "Gửi email OTP thất bại", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<Void> call, Throwable t) {
+                                Toast.makeText(getContext(), "Lỗi mạng khi gửi email OTP", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } else {
+                        Toast.makeText(getContext(), "Gửi lại OTP thất bại", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<GenerateOtpResponse> call, Throwable t) {
+                    Toast.makeText(getContext(), "Lỗi mạng khi gửi lại OTP", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
 
         pinView.addTextChangedListener(new TextWatcher() {
             @Override
@@ -117,10 +154,7 @@ public class OtpBottomSheet extends BottomSheetDialogFragment {
             }
         }.start();
     }
-
-    // ============================
-    // 🔹 HÀM LẤY EMAIL TỪ USER_ID
-    // ============================
+    
     private void getUserEmail(long userId) {
         apiService = ApiClient.getUserApiService();
 

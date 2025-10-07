@@ -103,18 +103,12 @@ public class TransactionHistoryScreen extends AppCompatActivity {
             }
         });
 
-
-
-
-
-
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.back);
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         rcvHistory.setLayoutManager(new LinearLayoutManager(this));
-
 
 
         accountServiceApi.getHistory(User.getInstance().getUserId()).enqueue(new Callback<List<TransactionItem>>() {
