@@ -50,7 +50,7 @@ public class HomeScreen extends AppCompatActivity {
     private ApiService apiService;
     private AccountServiceApi accountServiceApi;
 
-    Double balance = 0;
+    Double balance = 0.0;
 
     private Map<String, Class<?>> activityMap;
     final boolean[] isHidden = {true};
