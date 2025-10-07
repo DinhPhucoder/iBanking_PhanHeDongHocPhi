@@ -7,6 +7,6 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 
 public interface TuitionServiceApi {
-    @GET("students/{id}")
-    Call<Student> getStudentById(@Path("id") String studentId);
+    @GET("students/{mssv}/tuition")
+    Call<Student> getStudentById(@Path("mssv") String mssv);
 }
