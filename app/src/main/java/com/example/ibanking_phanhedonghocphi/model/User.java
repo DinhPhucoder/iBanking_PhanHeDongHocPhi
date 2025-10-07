@@ -1,12 +1,16 @@
 package com.example.ibanking_phanhedonghocphi.model;
 
 import android.app.Application;
+
+import com.google.gson.annotations.SerializedName;
+
 import java.math.BigInteger;
 
 public class User extends Application {
     private static User instance;
     private BigInteger userId;
     private String username;
+    @SerializedName("full_name")
     private String fullName;
     private String email;
     private String phone;

@@ -2,6 +2,7 @@ package com.example.ibanking_phanhedonghocphi;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -22,6 +23,7 @@ import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.model.User;
+import com.google.gson.Gson;
 
 
 import java.math.BigDecimal;
@@ -65,7 +67,7 @@ public class HomeScreen extends AppCompatActivity {
         apiService = ApiClient.getUserApiService();
         // Lấy userID từ LoginScreen
         long userId = getIntent().getLongExtra("USER_ID", -1);
-//        Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "USER_ID nhận được: " + userId, Toast.LENGTH_LONG).show();
 
         if (userId != -1) {
             // Gọi API lấy thông tin user
@@ -73,8 +75,15 @@ public class HomeScreen extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        String fullName = response.body().getFullName();
-                        textView.setText("Xin chào " + fullName);
+//                        String fullName = response.body().getFullName();
+//                        textView.setText("Xin chào " +
+                        User user = response.body();
+                        Log.d("API_USER", "User response: " + new Gson().toJson(user));
+                        textView.setText("Xin chào " + user.getFullName());
+                    }
+                    else {
+                        Log.e("API_USER", "Error: " + response.code() + " - " + response.message());
+                        textView.setText("Không tải được thông tin người dùng");
                     }
                 }
 
