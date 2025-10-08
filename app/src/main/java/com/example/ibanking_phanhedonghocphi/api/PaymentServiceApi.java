@@ -19,4 +19,8 @@ public interface PaymentServiceApi {
     // POST confirm payment (backend yêu cầu body chứa transactionId, otpId, otpCode)
     @POST("payments/confirm")
     Call<PaymentConfirmResponse> confirmPayment(@Body PaymentConfirmRequest request);
+
+    // GET pending payment for user
+    @GET("payments/pending/{userId}")
+    Call<PaymentInitResponse> getPending(@Path("userId") BigInteger userId);
 }

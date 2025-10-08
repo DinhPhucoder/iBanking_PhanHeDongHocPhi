@@ -81,8 +81,6 @@ public class HomeScreen extends AppCompatActivity {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
-//                        String fullName = response.body().getFullName();
-//                        textView.setText("Xin chào " +
                         User user = response.body();
                         Log.d("API_USER", "User response: " + new Gson().toJson(user));
                         textView.setText("Xin chào " + user.getFullName());
@@ -108,20 +106,22 @@ public class HomeScreen extends AppCompatActivity {
         textView = findViewById(R.id.textView);
         accountServiceApi = ApiClient.getAccountApiService();
 
+        // Mặc định ẩn số dư khi vào màn hình
+        tvBalacnce.setText("********* VND");
+        ivEye.setImageResource(R.drawable.eye);
+
         accountServiceApi.getBalance(User.getInstance().getUserId()).enqueue(new Callback<BigDecimal>() {
             @Override
             public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     balance = response.body().doubleValue();
                 } else {
-                    // Nếu không có dữ liệu hoặc lỗi truy cập, gán 0 và không báo lỗi
                     balance = 0d;
                 }
             }
 
             @Override
             public void onFailure(Call<BigDecimal> call, Throwable t) {
-                // Lỗi kết nối: gán 0 và không hiện toast
                 balance = 0d;
             }
         });
@@ -158,7 +158,7 @@ public class HomeScreen extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(isHidden[0]) {
-                    double vnd = balance != null ? balance : 0d; // fallback 0 nếu null
+                    double vnd = balance != null ? balance : 0d;
                     tvBalacnce.setText(formatHocPhi(vnd));
                     ivEye.setImageResource(R.drawable.eye_slash);
                 } else {
@@ -204,7 +204,11 @@ public class HomeScreen extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Đảm bảo số dư luôn được refresh khi quay lại màn hình
+        // Mỗi lần quay lại màn hình, ẩn số dư và reset icon mắt
+        isHidden[0] = true;
+        tvBalacnce.setText("********* VND");
+        ivEye.setImageResource(R.drawable.eye);
+        // Refresh số dư nhưng không hiển thị nếu đang ẩn
         refreshBalance();
     }
     
@@ -214,7 +218,9 @@ public class HomeScreen extends AppCompatActivity {
             public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     balance = response.body().doubleValue();
-                    tvBalacnce.setText(formatHocPhi(balance));
+                    if (!isHidden[0]) {
+                        tvBalacnce.setText(formatHocPhi(balance));
+                    }
                     Log.d("HomeScreen", "Balance refreshed: " + balance);
                 }
             }

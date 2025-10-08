@@ -1,6 +1,7 @@
 package com.example.ibanking_phanhedonghocphi;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -51,6 +52,11 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
     private String lastMssv;
     private java.math.BigDecimal lastAmount;
     private long lastUserId;
+    private static final String PREFS_NAME = "tuition_payment_prefs";
+    private static final String KEY_TX_ID = "pending_tx_id";
+    private static final String KEY_MSSV = "pending_mssv";
+    private static final String KEY_AMOUNT = "pending_amount";
+    private static final String KEY_USER_ID = "pending_user_id";
 
 
     @Override
@@ -74,7 +80,6 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
         tvStatus = findViewById(R.id.tvStatus);
         edtMSSV = findViewById(R.id.edtMSSV);
         tbl = findViewById(R.id.tbl);
-//        btnPay = findViewById(R.id.btnPay);
         btnContinue = findViewById(R.id.btnContinue);
 
         setSupportActionBar(toolbar);
@@ -100,114 +105,137 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
         btnContinue.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (selectedStudent == null) {
-                    Toast.makeText(TutionScreen.this, "Vui lòng nhập MSSV hợp lệ", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                // Ngăn thanh toán lại khi học phí đã bằng 0 (đã thanh toán)
-                if (selectedStudent.getTuitionFee() == 0.0) {
-                    Toast.makeText(TutionScreen.this, "Học phí đã thanh toán", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                // Khởi tạo payment: userId, mssv, amount
-                // Fix BigDecimal creation to avoid parsing issues
-                double tuitionFee = selectedStudent.getTuitionFee();
-                // Gửi số âm để phù hợp rule mới của backend (amount âm = số tiền cần gạch nợ)
-                java.math.BigDecimal amount = java.math.BigDecimal
-                        .valueOf(tuitionFee)
-                        .setScale(2, java.math.RoundingMode.HALF_UP)
-                        .negate();
-                
-
-                
-                PaymentInitRequest req = new PaymentInitRequest(
-                        java.math.BigInteger.valueOf(userId),
-                        selectedStudent.getMSSV(),
-                        amount
-                );
-                // Debug: Log request details
-                Toast.makeText(TutionScreen.this, "Đang gửi request: userId=" + userId + ", mssv=" + selectedStudent.getMSSV() + ", amount=" + selectedStudent.getTuitionFee(), Toast.LENGTH_LONG).show();
-                
-                paymentRepository.initiate(req).enqueue(new retrofit2.Callback<PaymentInitResponse>() {
+                paymentRepository.getPending(java.math.BigInteger.valueOf(userId)).enqueue(new retrofit2.Callback<com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse>() {
                     @Override
-                    public void onResponse(retrofit2.Call<PaymentInitResponse> call, retrofit2.Response<PaymentInitResponse> response) {
-                        // Debug: Log response details
-                        String debugMsg = "Response code: " + response.code() + ", Success: " + response.isSuccessful();
-                        if (response.body() != null) {
-                            debugMsg += ", TransactionId: " + response.body().getTransactionId();
-                        } else {
-                            debugMsg += ", Body is null";
-                        }
-                        Toast.makeText(TutionScreen.this, debugMsg, Toast.LENGTH_LONG).show();
-                        
+                    public void onResponse(retrofit2.Call<com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse> call, retrofit2.Response<com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            PaymentInitResponse res = response.body();
-                            // lưu thông tin giao dịch để gửi email xác nhận sau khi confirm thành công
+                            com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse res = response.body();
+                            // Mở lại OTP với transactionId pending
                             lastTransactionId = res.getTransactionId();
-                            lastMssv = selectedStudent.getMSSV();
-                            lastAmount = amount;
+                            lastMssv = selectedStudent != null ? selectedStudent.getMSSV() : null;
                             lastUserId = userId;
                             OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
                             Bundle bundle = new Bundle();
                             bundle.putLong("USER_ID", userId);
                             bundle.putString("TRANSACTION_ID", res.getTransactionId());
                             bundle.putString("OTP_ID", res.getOtpId());
-                            bundle.putString("MSSV", selectedStudent.getMSSV());
-                            bundle.putString("AMOUNT", amount.toPlainString());
+                            bundle.putString("MSSV", lastMssv);
+                            bundle.putString("AMOUNT", lastAmount != null ? lastAmount.toPlainString() : null);
                             otpBottomSheet.setArguments(bundle);
-                            
-                            // Set callback để nhận kết quả payment
                             otpBottomSheet.setPaymentCallback(TutionScreen.this);
-                            
                             otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                        } else if (response.code() == 204) {
+                            // Không có pending -> tiếp tục luồng initiate như cũ
+                            proceedInitiate(userId);
                         } else {
-                            // More detailed error message
-                            String errorMsg = "Khởi tạo giao dịch thất bại";
-                            if (!response.isSuccessful()) {
-                                errorMsg += " - HTTP " + response.code();
-                                
-                                // Handle specific error codes
-                                if (response.code() == 409) {
-                                    errorMsg = "Giao dịch đã tồn tại hoặc có xung đột dữ liệu (409)";
-                                } else if (response.code() == 400) {
-                                    errorMsg = "Dữ liệu không hợp lệ (400)";
-                                } else if (response.code() == 404) {
-                                    errorMsg = "Không tìm thấy tài nguyên (404)";
-                                } else if (response.code() == 500) {
-                                    errorMsg = "Lỗi server (500)";
-                                }
-                                
-                                if (response.errorBody() != null) {
-                                    try {
-                                        String errorBody = response.errorBody().string();
-                                        errorMsg += "\nChi tiết: " + errorBody;
-                                    } catch (Exception e) {
-                                        errorMsg += " (Không đọc được error body)";
-                                    }
-                                }
-                            } else if (response.body() == null) {
-                                errorMsg += " - Response body null";
-                            }
-                            Toast.makeText(TutionScreen.this, errorMsg, Toast.LENGTH_LONG).show();
-                            
-                            // Vẫn show BottomSheet nhưng chỉ có USER_ID (fallback)
-                            OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
-                            Bundle bundle = new Bundle();
-                            bundle.putLong("USER_ID", userId);
-                            // Không có TRANSACTION_ID, OTP_ID, MSSV, AMOUNT
-                            otpBottomSheet.setArguments(bundle);
-                            otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                            proceedInitiate(userId);
                         }
                     }
 
                     @Override
-                    public void onFailure(retrofit2.Call<PaymentInitResponse> call, Throwable t) {
-                        Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    public void onFailure(retrofit2.Call<com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse> call, Throwable t) {
+                        // Lỗi mạng -> fallback initiate
+                        proceedInitiate(userId);
                     }
                 });
             }
         });
 
+    }
+
+    private void proceedInitiate(long userId) {
+        if (selectedStudent == null) {
+            Toast.makeText(TutionScreen.this, "Vui lòng nhập MSSV hợp lệ", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedStudent.getTuitionFee() == 0.0) {
+            Toast.makeText(TutionScreen.this, "Học phí đã thanh toán", Toast.LENGTH_LONG).show();
+            return;
+        }
+        double tuitionFee = selectedStudent.getTuitionFee();
+        java.math.BigDecimal amount = java.math.BigDecimal
+                .valueOf(tuitionFee)
+                .setScale(2, java.math.RoundingMode.HALF_UP)
+                .negate();
+
+        PaymentInitRequest req = new PaymentInitRequest(
+                java.math.BigInteger.valueOf(userId),
+                selectedStudent.getMSSV(),
+                amount
+        );
+
+        paymentRepository.initiate(req).enqueue(new retrofit2.Callback<PaymentInitResponse>() {
+            @Override
+            public void onResponse(retrofit2.Call<PaymentInitResponse> call, retrofit2.Response<PaymentInitResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    PaymentInitResponse res = response.body();
+                    lastTransactionId = res.getTransactionId();
+                    lastMssv = selectedStudent.getMSSV();
+                    lastAmount = amount;
+                    lastUserId = userId;
+                    savePendingPayment(lastTransactionId, lastMssv, lastAmount, lastUserId);
+                    OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                    Bundle bundle = new Bundle();
+                    bundle.putLong("USER_ID", userId);
+                    bundle.putString("TRANSACTION_ID", res.getTransactionId());
+                    bundle.putString("OTP_ID", res.getOtpId());
+                    bundle.putString("MSSV", selectedStudent.getMSSV());
+                    bundle.putString("AMOUNT", amount.toPlainString());
+                    otpBottomSheet.setArguments(bundle);
+                    otpBottomSheet.setPaymentCallback(TutionScreen.this);
+                    otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                } else {
+                    String errorMsg = "Khởi tạo giao dịch thất bại";
+                    if (!response.isSuccessful()) {
+                        errorMsg += " - HTTP " + response.code();
+                        if (response.code() == 409) {
+                            errorMsg = "Sinh viên đang xử lý. Vui lòng thử lại sau";
+                        } else if (response.code() == 400) {
+                            errorMsg = "Dữ liệu không hợp lệ (400)";
+                        } else if (response.code() == 404) {
+                            errorMsg = "Không tìm thấy tài nguyên (404)";
+                        } else if (response.code() == 500) {
+                            errorMsg = "Lỗi server (500)";
+                        }
+                        if (response.errorBody() != null) {
+                            try { String errorBody = response.errorBody().string(); errorMsg += "\nChi tiết: " + errorBody; } catch (Exception e) { errorMsg += " (Không đọc được error body)"; }
+                        }
+                    } else if (response.body() == null) {
+                        errorMsg += " - Response body null";
+                    }
+                    Toast.makeText(TutionScreen.this, errorMsg, Toast.LENGTH_LONG).show();
+                    OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                    Bundle bundle = new Bundle();
+                    bundle.putLong("USER_ID", userId);
+                    otpBottomSheet.setArguments(bundle);
+                    otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<PaymentInitResponse> call, Throwable t) {
+                Toast.makeText(TutionScreen.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void savePendingPayment(String txId, String mssv, java.math.BigDecimal amount, long userId) {
+        try {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            prefs.edit()
+                    .putString(KEY_TX_ID, txId)
+                    .putString(KEY_MSSV, mssv)
+                    .putString(KEY_AMOUNT, amount != null ? amount.toPlainString() : null)
+                    .putLong(KEY_USER_ID, userId)
+                    .apply();
+        } catch (Exception ignore) {}
+    }
+
+    private void clearPendingPayment() {
+        try {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            prefs.edit().clear().apply();
+        } catch (Exception ignore) {}
     }
 
     private void showStudentInfo(String mssv) {
@@ -257,37 +285,14 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
         Intent refreshIntent = new Intent("com.example.ibanking_phanhedonghocphi.PAYMENT_SUCCESS");
         sendBroadcast(refreshIntent);
 
-        // Gửi email xác nhận giao dịch (non-blocking). Bỏ qua nếu thiếu dữ liệu cần thiết
-        try {
-            if (lastTransactionId != null && lastAmount != null && lastMssv != null && lastUserId > 0) {
-                OTPNotificationServiceApi otpApi = ApiClient.getOtpApiService();
-                EmailRequest confirmEmail = new EmailRequest(
-                        java.math.BigInteger.valueOf(lastUserId),
-                        lastTransactionId,
-                        lastAmount,
-                        lastMssv
-                );
-                otpApi.sendEmail(confirmEmail).enqueue(new retrofit2.Callback<Void>() {
-                    @Override
-                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
-                        // Thông báo nhẹ, không chặn luồng
-                        if (!response.isSuccessful()) {
-                            Toast.makeText(TutionScreen.this, "Gửi email xác nhận thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {
-                        Toast.makeText(TutionScreen.this, "Lỗi gửi email xác nhận: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        } catch (Exception ignore) {}
+        
         
         // Show success message
         Toast.makeText(this, "Thanh toán học phí thành công!", Toast.LENGTH_LONG).show();
 
-        // Quay lại màn hình trước (Home) để người dùng thấy dữ liệu đã được reload
+        // Clear pending lưu trên máy (không bắt buộc, để đồng bộ với backend)
+        clearPendingPayment();
+
         setResult(RESULT_OK);
         finish();
     }
@@ -295,6 +300,11 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
     @Override
     public void onPaymentError(String error) {
         Toast.makeText(this, "Thanh toán thất bại: " + error, Toast.LENGTH_LONG).show();
+        // Xóa pending local để tránh kẹt trạng thái
+        try { clearPendingPayment(); } catch (Exception ignore) {}
+        // Quay về Home
+        setResult(RESULT_CANCELED);
+        finish();
     }
 
 }

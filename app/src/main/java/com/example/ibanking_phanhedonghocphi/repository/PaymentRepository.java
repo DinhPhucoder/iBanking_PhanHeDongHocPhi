@@ -28,6 +28,10 @@ public class PaymentRepository {
     public Call<TransactionIdResponse> getTransactionId() {
         return api.getTransactionId();
     }
+
+    public Call<PaymentInitResponse> getPending(java.math.BigInteger userId) {
+        return api.getPending(userId);
+    }
 }
 
 

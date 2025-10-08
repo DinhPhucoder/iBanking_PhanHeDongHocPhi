@@ -14,15 +14,15 @@ import java.math.BigDecimal;
 public class ApiClient {
     // URL cho AccountService
 
-    private static String USER_BASE_URL = "http://10.0.2.2:8081/";
+    private static String USER_BASE_URL = "http://192.168.1.47:8081/";
     // Dien thoai Phu: 192.168.1.47
     // May ao android: 10.0.2.2
     // IP thực tế: 192.168.1.9
-    private static String ACCOUNT_BASE_URL = "http://10.0.2.2:8082/";
+    private static String ACCOUNT_BASE_URL = "http://192.168.1.47:8082/";
     // URL cho PaymentService
-    private static String PAYMENT_BASE_URL = "http://10.0.2.2:8083/";
-    private static String TUITION_BASE_URL = "http://10.0.2.2:8084/";
-    private static String OTP_BASE_URL = "http://10.0.2.2:8085/";
+    private static String PAYMENT_BASE_URL = "http://192.168.1.47:8083/";
+    private static String TUITION_BASE_URL = "http://192.168.1.47:8084/";
+    private static String OTP_BASE_URL = "http://192.168.1.47:8085/";
 
     private static Retrofit accountRetrofit;
     private static Retrofit paymentRetrofit;
