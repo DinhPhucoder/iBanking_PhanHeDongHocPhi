@@ -14,14 +14,15 @@ import java.math.BigDecimal;
 public class ApiClient {
     // URL cho AccountService
 
-    private static String USER_BASE_URL = "http://10.0.2.2:8081/";
+    private static String USER_BASE_URL = "http://192.168.1.9:8081/";
     // Dien thoai Phu: 192.168.1.47
     // May ao android: 10.0.2.2
-    private static String ACCOUNT_BASE_URL = "http://10.0.2.2:8082/";
+    // IP thực tế: 192.168.1.9
+    private static String ACCOUNT_BASE_URL = "http://192.168.1.9:8082/";
     // URL cho PaymentService
-    private static String PAYMENT_BASE_URL = "http://10.0.2.2:8083/";
-    private static String TUITION_BASE_URL = "http://10.0.2.2:8084/";
-    private static String OTP_BASE_URL = "http://10.0.2.2:8085/";
+    private static String PAYMENT_BASE_URL = "http://192.168.1.9:8083/";
+    private static String TUITION_BASE_URL = "http://192.168.1.9:8084/";
+    private static String OTP_BASE_URL = "http://192.168.1.9:8085/";
 
     private static Retrofit accountRetrofit;
     private static Retrofit paymentRetrofit;
@@ -33,30 +34,55 @@ public class ApiClient {
     // Custom Gson để handle BigInteger và BigDecimal
     private static Gson createGson() {
         return new GsonBuilder()
-                .registerTypeAdapter(BigInteger.class, new TypeAdapter<BigInteger>() {
-                    @Override
-                    public void write(JsonWriter out, BigInteger value) throws IOException {
-                        out.value(value.toString());
-                    }
-
-                    @Override
-                    public BigInteger read(JsonReader in) throws IOException {
-                        return new BigInteger(in.nextString());
-                    }
-                })
+                .setLenient()
                 .registerTypeAdapter(BigDecimal.class, new TypeAdapter<BigDecimal>() {
                     @Override
                     public void write(JsonWriter out, BigDecimal value) throws IOException {
-                        out.value(value.toString());
+                        out.value(value);
                     }
 
                     @Override
                     public BigDecimal read(JsonReader in) throws IOException {
-                        return new BigDecimal(in.nextString());
+                        try {
+                            String raw = in.nextString().trim();
+                            // Cho phép 1 dấu + hoặc - ở đầu
+                            raw = raw.replaceAll("[^0-9+\\-\\.]", ""); // giữ lại +, -, số và .
+                            if (raw.matches("^[+-]?[0-9]+(\\.[0-9]+)?$")) {
+                                return new BigDecimal(raw);
+                            } else {
+                                // nếu sai định dạng thì fallback
+                                return BigDecimal.ZERO;
+                            }
+                        } catch (Exception e) {
+                            return BigDecimal.ZERO;
+                        }
+                    }
+                })
+                .registerTypeAdapter(BigInteger.class, new TypeAdapter<BigInteger>() {
+                    @Override
+                    public void write(JsonWriter out, BigInteger value) throws IOException {
+                        out.value(value);
+                    }
+
+                    @Override
+                    public BigInteger read(JsonReader in) throws IOException {
+                        try {
+                            String raw = in.nextString().trim();
+                            // Cho phép 1 dấu + hoặc - ở đầu
+                            raw = raw.replaceAll("[^0-9+\\-]", "");
+                            if (raw.matches("^[+-]?[0-9]+$")) {
+                                return new BigInteger(raw);
+                            } else {
+                                return BigInteger.ZERO;
+                            }
+                        } catch (Exception e) {
+                            return BigInteger.ZERO;
+                        }
                     }
                 })
                 .create();
     }
+
 
     // Retrofit cho UserService
     public static Retrofit getUserRetrofit() {

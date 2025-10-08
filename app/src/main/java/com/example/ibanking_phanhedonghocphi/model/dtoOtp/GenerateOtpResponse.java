@@ -1,12 +1,13 @@
 package com.example.ibanking_phanhedonghocphi.model.dtoOtp;
 
-import java.time.OffsetDateTime;
-
 public class GenerateOtpResponse {
     private String otpId;
-    private OffsetDateTime expiresAt;
+    private String expiresAt;
 
-    public GenerateOtpResponse(String otpId, OffsetDateTime expiresAt) {
+    public GenerateOtpResponse() {
+    }
+
+    public GenerateOtpResponse(String otpId, String expiresAt) {
         this.otpId = otpId;
         this.expiresAt = expiresAt;
     }
@@ -19,11 +20,11 @@ public class GenerateOtpResponse {
         this.otpId = otpId;
     }
 
-    public OffsetDateTime getExpiresAt() {
+    public String getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(OffsetDateTime expiresAt) {
+    public void setExpiresAt(String expiresAt) {
         this.expiresAt = expiresAt;
     }
 }

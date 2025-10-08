@@ -1,6 +1,9 @@
 package com.example.ibanking_phanhedonghocphi;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,7 +27,9 @@ import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.model.MenuItem;
 import com.example.ibanking_phanhedonghocphi.model.User;
 import com.google.gson.Gson;
-
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -49,6 +54,7 @@ public class HomeScreen extends AppCompatActivity {
     TextView textView;
     private ApiService apiService;
     private AccountServiceApi accountServiceApi;
+    private BroadcastReceiver paymentSuccessReceiver;
 
     Double balance = 0.0;
 
@@ -171,7 +177,55 @@ public class HomeScreen extends AppCompatActivity {
 
             }
         });
+        
+        // Register BroadcastReceiver để nhận thông báo payment success
+        paymentSuccessReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if ("com.example.ibanking_phanhedonghocphi.PAYMENT_SUCCESS".equals(intent.getAction())) {
+                    Log.d("HomeScreen", "Received payment success broadcast, refreshing balance...");
+                    refreshBalance();
+                }
+            }
+        };
+        
+        IntentFilter filter = new IntentFilter("com.example.ibanking_phanhedonghocphi.PAYMENT_SUCCESS");
+        registerReceiver(paymentSuccessReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
     }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (paymentSuccessReceiver != null) {
+            unregisterReceiver(paymentSuccessReceiver);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Đảm bảo số dư luôn được refresh khi quay lại màn hình
+        refreshBalance();
+    }
+    
+    private void refreshBalance() {
+        accountServiceApi.getBalance(User.getInstance().getUserId()).enqueue(new Callback<BigDecimal>() {
+            @Override
+            public void onResponse(Call<BigDecimal> call, Response<BigDecimal> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    balance = response.body().doubleValue();
+                    tvBalacnce.setText(formatHocPhi(balance));
+                    Log.d("HomeScreen", "Balance refreshed: " + balance);
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<BigDecimal> call, Throwable t) {
+                Log.d("HomeScreen", "Failed to refresh balance: " + t.getMessage());
+            }
+        });
+    }
+    
     private String formatHocPhi(double hocPhi) {
         Locale vietnam = new Locale("vi", "VN");
         NumberFormat formatterVND = NumberFormat.getCurrencyInstance(vietnam);

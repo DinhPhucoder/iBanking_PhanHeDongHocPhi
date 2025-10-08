@@ -1,5 +1,6 @@
 package com.example.ibanking_phanhedonghocphi;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,10 +18,10 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.chaos.view.PinView;
+import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.api.TuitionServiceApi;
-import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
 import com.example.ibanking_phanhedonghocphi.repository.PaymentRepository;
 import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitRequest;
 import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse;
@@ -34,7 +35,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class TutionScreen extends AppCompatActivity {
+public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.PaymentCallback {
     Toolbar toolbar;
     TextView tvHoTen, tvMSSV, tvHocPhi, tvStatus;
     Button btnPay, btnContinue;
@@ -100,7 +101,13 @@ public class TutionScreen extends AppCompatActivity {
                 // Khởi tạo payment: userId, mssv, amount
                 // Fix BigDecimal creation to avoid parsing issues
                 double tuitionFee = selectedStudent.getTuitionFee();
-                java.math.BigDecimal amount = java.math.BigDecimal.valueOf(tuitionFee).setScale(2, java.math.RoundingMode.HALF_UP);
+                // Gửi số âm để phù hợp rule mới của backend (amount âm = số tiền cần gạch nợ)
+                java.math.BigDecimal amount = java.math.BigDecimal
+                        .valueOf(tuitionFee)
+                        .setScale(2, java.math.RoundingMode.HALF_UP)
+                        .negate();
+                
+
                 
                 PaymentInitRequest req = new PaymentInitRequest(
                         java.math.BigInteger.valueOf(userId),
@@ -128,9 +135,14 @@ public class TutionScreen extends AppCompatActivity {
                             Bundle bundle = new Bundle();
                             bundle.putLong("USER_ID", userId);
                             bundle.putString("TRANSACTION_ID", res.getTransactionId());
-                            bundle.putString("OTP_ID", res.getOtpId() != null ? res.getOtpId().toString() : null);
+                            bundle.putString("OTP_ID", res.getOtpId());
                             bundle.putString("MSSV", selectedStudent.getMSSV());
+                            bundle.putString("AMOUNT", amount.toPlainString());
                             otpBottomSheet.setArguments(bundle);
+                            
+                            // Set callback để nhận kết quả payment
+                            otpBottomSheet.setPaymentCallback(TutionScreen.this);
+                            
                             otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
                         } else {
                             // More detailed error message
@@ -161,6 +173,14 @@ public class TutionScreen extends AppCompatActivity {
                                 errorMsg += " - Response body null";
                             }
                             Toast.makeText(TutionScreen.this, errorMsg, Toast.LENGTH_LONG).show();
+                            
+                            // Vẫn show BottomSheet nhưng chỉ có USER_ID (fallback)
+                            OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
+                            Bundle bundle = new Bundle();
+                            bundle.putLong("USER_ID", userId);
+                            // Không có TRANSACTION_ID, OTP_ID, MSSV, AMOUNT
+                            otpBottomSheet.setArguments(bundle);
+                            otpBottomSheet.show(getSupportFragmentManager(), otpBottomSheet.getTag());
                         }
                     }
 
@@ -208,5 +228,30 @@ public class TutionScreen extends AppCompatActivity {
         return formatterVND.format(hocPhi).replace("₫", "VND");
     }
 
+    // Implement PaymentCallback methods
+    @Override
+    public void onPaymentSuccess() {
+
+        // Refresh student info để cập nhật trạng thái học phí
+        if (selectedStudent != null) {
+            showStudentInfo(selectedStudent.getMSSV());
+        }
+        
+        // Broadcast intent để các màn hình khác refresh data
+        Intent refreshIntent = new Intent("com.example.ibanking_phanhedonghocphi.PAYMENT_SUCCESS");
+        sendBroadcast(refreshIntent);
+        
+        // Show success message
+        Toast.makeText(this, "Thanh toán học phí thành công!", Toast.LENGTH_LONG).show();
+
+        // Quay lại màn hình trước (Home) để người dùng thấy dữ liệu đã được reload
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    @Override
+    public void onPaymentError(String error) {
+        Toast.makeText(this, "Thanh toán thất bại: " + error, Toast.LENGTH_LONG).show();
+    }
 
 }

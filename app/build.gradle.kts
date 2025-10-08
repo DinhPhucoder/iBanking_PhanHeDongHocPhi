@@ -47,7 +47,9 @@ dependencies {
     // Network
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
     // JSON
     implementation("com.google.code.gson:gson:2.8.9")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 }

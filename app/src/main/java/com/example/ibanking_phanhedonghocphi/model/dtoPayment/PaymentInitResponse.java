@@ -1,14 +1,12 @@
 package com.example.ibanking_phanhedonghocphi.model.dtoPayment;
 
-import java.math.BigInteger;
-
 public class PaymentInitResponse {
     private String transactionId;
-    private BigInteger otpId;
+    private String otpId;
 
     public PaymentInitResponse() {}
 
-    public PaymentInitResponse(String transactionId, BigInteger otpId) {
+    public PaymentInitResponse(String transactionId, String otpId) {
         this.transactionId = transactionId;
         this.otpId = otpId;
     }
@@ -17,6 +15,6 @@ public class PaymentInitResponse {
     public String getTransactionId() { return transactionId; }
     public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
 
-    public BigInteger getOtpId() { return otpId; }
-    public void setOtpId(BigInteger otpId) { this.otpId = otpId; }
+    public String getOtpId() { return otpId; }
+    public void setOtpId(String otpId) { this.otpId = otpId; }
 }
