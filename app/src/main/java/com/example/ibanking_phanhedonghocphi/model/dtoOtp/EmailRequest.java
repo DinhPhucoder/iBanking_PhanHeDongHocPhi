@@ -6,6 +6,9 @@ public class EmailRequest {
     private BigInteger userId;
     private String type;
     private String otpId;
+    private String transactionId;      // used when type = CONFIRMATION
+    private java.math.BigDecimal amount; // used when type = CONFIRMATION
+    private String mssv;               // used when type = CONFIRMATION
 
     public EmailRequest() {}
 
@@ -13,6 +16,15 @@ public class EmailRequest {
         this.userId = userId;
         this.type = "OTP";  // Mặc định là OTP
         this.otpId = otpId;
+    }
+
+    // Constructor cho email xác nhận giao dịch
+    public EmailRequest(BigInteger userId, String transactionId, java.math.BigDecimal amount, String mssv) {
+        this.userId = userId;
+        this.type = "CONFIRMATION";
+        this.transactionId = transactionId;
+        this.amount = amount;
+        this.mssv = mssv;
     }
 
     public BigInteger getUserId() {
@@ -37,6 +49,30 @@ public class EmailRequest {
 
     public void setOtpId(String otpId) {
         this.otpId = otpId;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public java.math.BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(java.math.BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public String getMssv() {
+        return mssv;
+    }
+
+    public void setMssv(String mssv) {
+        this.mssv = mssv;
     }
 }
 

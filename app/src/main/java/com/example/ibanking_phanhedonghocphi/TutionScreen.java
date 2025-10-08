@@ -22,10 +22,12 @@ import com.example.ibanking_phanhedonghocphi.fragment.OtpBottomSheet;
 import com.example.ibanking_phanhedonghocphi.api.ApiClient;
 import com.example.ibanking_phanhedonghocphi.api.ApiService;
 import com.example.ibanking_phanhedonghocphi.api.TuitionServiceApi;
+import com.example.ibanking_phanhedonghocphi.api.OTPNotificationServiceApi;
 import com.example.ibanking_phanhedonghocphi.repository.PaymentRepository;
 import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitRequest;
 import com.example.ibanking_phanhedonghocphi.model.dtoPayment.PaymentInitResponse;
 import com.example.ibanking_phanhedonghocphi.model.Student;
+import com.example.ibanking_phanhedonghocphi.model.dtoOtp.EmailRequest;
 import com.google.android.material.textfield.TextInputEditText;
 
 import java.text.NumberFormat;
@@ -45,6 +47,10 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
     private TuitionServiceApi tuitionServiceApi;
     private PaymentRepository paymentRepository;
     private Student selectedStudent;
+    private String lastTransactionId;
+    private String lastMssv;
+    private java.math.BigDecimal lastAmount;
+    private long lastUserId;
 
 
     @Override
@@ -98,6 +104,11 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
                     Toast.makeText(TutionScreen.this, "Vui lòng nhập MSSV hợp lệ", Toast.LENGTH_SHORT).show();
                     return;
                 }
+                // Ngăn thanh toán lại khi học phí đã bằng 0 (đã thanh toán)
+                if (selectedStudent.getTuitionFee() == 0.0) {
+                    Toast.makeText(TutionScreen.this, "Học phí đã thanh toán", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 // Khởi tạo payment: userId, mssv, amount
                 // Fix BigDecimal creation to avoid parsing issues
                 double tuitionFee = selectedStudent.getTuitionFee();
@@ -131,6 +142,11 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
                         
                         if (response.isSuccessful() && response.body() != null) {
                             PaymentInitResponse res = response.body();
+                            // lưu thông tin giao dịch để gửi email xác nhận sau khi confirm thành công
+                            lastTransactionId = res.getTransactionId();
+                            lastMssv = selectedStudent.getMSSV();
+                            lastAmount = amount;
+                            lastUserId = userId;
                             OtpBottomSheet otpBottomSheet = new OtpBottomSheet();
                             Bundle bundle = new Bundle();
                             bundle.putLong("USER_ID", userId);
@@ -240,6 +256,33 @@ public class TutionScreen extends AppCompatActivity implements OtpBottomSheet.Pa
         // Broadcast intent để các màn hình khác refresh data
         Intent refreshIntent = new Intent("com.example.ibanking_phanhedonghocphi.PAYMENT_SUCCESS");
         sendBroadcast(refreshIntent);
+
+        // Gửi email xác nhận giao dịch (non-blocking). Bỏ qua nếu thiếu dữ liệu cần thiết
+        try {
+            if (lastTransactionId != null && lastAmount != null && lastMssv != null && lastUserId > 0) {
+                OTPNotificationServiceApi otpApi = ApiClient.getOtpApiService();
+                EmailRequest confirmEmail = new EmailRequest(
+                        java.math.BigInteger.valueOf(lastUserId),
+                        lastTransactionId,
+                        lastAmount,
+                        lastMssv
+                );
+                otpApi.sendEmail(confirmEmail).enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                        // Thông báo nhẹ, không chặn luồng
+                        if (!response.isSuccessful()) {
+                            Toast.makeText(TutionScreen.this, "Gửi email xác nhận thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                        Toast.makeText(TutionScreen.this, "Lỗi gửi email xác nhận: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        } catch (Exception ignore) {}
         
         // Show success message
         Toast.makeText(this, "Thanh toán học phí thành công!", Toast.LENGTH_LONG).show();
